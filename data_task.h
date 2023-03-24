@@ -34,6 +34,8 @@ protected:
     ptree_t in_root;
     ptree_t out_root;
 
+    const std::string f_name;
+
     void fill_set_data() {
         ptree_t list_nodes = in_root.get_child("tasks");
         
@@ -47,9 +49,25 @@ protected:
     }
 
 public:
-    data_task(const char* f_name) {
+    data_task(const char* f_name) : f_name(f_name) {
         property::read_json(f_name, in_root);
         fill_set_data();
+    }
+
+    void write_to_json() {
+        property::ptree list_tasks;
+        for(auto& [key, values] : set_data) {
+            for(auto& [c_time, c_task] : values) {
+                property::ptree node;
+                node.put("date", std::move(key));
+                node.put("time", std::move(c_time));
+                node.put("task", std::move(c_task));
+                list_tasks.push_back(std::make_pair("", node));
+            }
+        }
+
+        out_root.add_child("tasks", list_tasks);
+        property::write_json(f_name.c_str(), out_root);
     }
     
 
