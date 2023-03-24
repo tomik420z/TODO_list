@@ -34,7 +34,7 @@ protected:
     ptree_t in_root;
     ptree_t out_root;
 
-    const std::string f_name;
+    const std::string file_name;
 
     void fill_set_data() {
         ptree_t list_nodes = in_root.get_child("tasks");
@@ -49,7 +49,7 @@ protected:
     }
 
 public:
-    data_task(const char* f_name) : f_name(f_name) {
+    data_task(const char* f_name) : file_name(f_name) {
         property::read_json(f_name, in_root);
         fill_set_data();
     }
@@ -67,7 +67,7 @@ public:
         }
 
         out_root.add_child("tasks", list_tasks);
-        property::write_json(f_name.c_str(), out_root);
+        property::write_json(file_name, out_root);
     }
     
 
