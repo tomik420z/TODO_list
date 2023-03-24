@@ -51,7 +51,9 @@ public:
         property::read_json(f_name, in_root);
         fill_set_data();
     }
+    
 
+    
     ~data_task() {
 
     }
