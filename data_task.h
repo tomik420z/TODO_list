@@ -84,6 +84,16 @@ public:
             }
         }
     }
+
+    void show_tasks_for_the_current_day(const std::string& date) {
+
+        if (auto it = set_data.find(date); it != set_data.end()) {
+            for (const auto& [c_time, c_date] : it->second) {
+                std::cout << c_time << " " << c_date << std::endl;
+            }
+        }
+    }
+
 };
 
 #endif
