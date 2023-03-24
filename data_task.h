@@ -42,7 +42,7 @@ protected:
 
     void fill_set_data() {
         ptree_t list_nodes = in_root.get_child("tasks");
-        
+
         for(const auto& [ingnore_path, node_values] : list_nodes) {
         
             std::string date = node_values.get<std::string>("date");
@@ -79,6 +79,22 @@ public:
 
         out_root.add_child("tasks", list_tasks);
         property::write_json(file_name, out_root);
+    }
+
+    void add_new_task() {
+        std::cout << "input date : " << std::endl;
+        std::string date;
+        std::getline(std::cin, date, '\n');
+        
+        std::cout << "input task : " << std::endl;
+        std::string task;
+        std::getline(std::cin, task, '\n');
+        
+        std::cout << "input time : " << std::endl;
+        std::string c_time;
+        std::getline(std::cin, c_time, '\n');
+        
+        set_data[date].insert(data_el{c_time, task});  
     }
     
 
