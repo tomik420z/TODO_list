@@ -102,6 +102,49 @@ public:
 
         set_data[date].insert(data_el{time_start, time_end, task});  
     }
+
+void remove_task()
+    {
+        std::cout << "input date : " << std::endl;
+        std::string date;
+        std::getline(std::cin, date, '\n');
+
+        auto iter_find = set_data.find(date);
+        if (iter_find == set_data.end()) {
+            std::cout << "error" << std::endl;
+            return;
+        }
+
+        int i = 0;
+        auto &ref_set = set_data[date];
+        for (auto &[start_time, end_time, c_task] : ref_set)
+        {
+            std::cout << ++i << ". " << start_time << "-" << end_time << std::endl
+                      << c_task << std::endl;
+        }
+
+        int index;
+        std::cin >> index;
+        if (index < 0 || index > i)
+        {
+            ;//throw "hui";
+        }
+
+        int index1 = 1;
+        for (auto iter = ref_set.begin(); iter != ref_set.end(); ++iter)
+        {
+            if (index1 == index)
+            {
+                ref_set.erase(iter);
+                // break;
+                if (ref_set.empty())
+                {
+                    set_data.erase(date);
+                }
+            }
+            index1++;
+        }
+    }
     
 
     
