@@ -2,22 +2,26 @@
     "tasks": [
         {
             "date": "12.03.2023",
-            "time": "17:00",
+            "start_time": "15:00",
+            "end_time": "19:00",
             "task": "12344"
         },
         {
             "date": "14.03.2023",
-            "time": "10:00",
+            "start_time": "10:00",
+            "end_time": "11:00",
             "task": "wwwww"
         },
         {
             "date": "11.03.2023",
-            "time": "12:20",
+            "start_time": "12:20",
+            "end_time": "13:00",
             "task": "swim"
         },
         {
             "date": "11.03.2023",
-            "time": "23:45",
+            "start_time": "23:45",
+            "end_time": "23:59",
             "task": "oooo"
         }
     ]
