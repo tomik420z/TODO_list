@@ -4,6 +4,8 @@
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
+#include <boost/date_time/gregorian/gregorian.hpp>
+#include <boost/date_time/time_clock.hpp>
 #include <boost/foreach.hpp>
 #include <cassert>
 #include <exception>
