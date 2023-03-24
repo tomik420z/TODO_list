@@ -90,11 +90,17 @@ public:
         std::string task;
         std::getline(std::cin, task, '\n');
         
-        std::cout << "input time : " << std::endl;
-        std::string c_time;
-        std::getline(std::cin, c_time, '\n');
+        std::cout << "input time start : " << std::endl;
+        std::string time_start;
+        std::getline(std::cin, time_start, '\n');
         
-        set_data[date].insert(data_el{c_time, task});  
+        
+        std::cout << "input time end : " << std::endl;
+        std::string time_end;
+        std::getline(std::cin, time_end, '\n');
+        
+
+        set_data[date].insert(data_el{time_start, time_end, task});  
     }
     
 
