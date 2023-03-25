@@ -102,47 +102,29 @@ public:
 
         set_data[date].insert(data_el{time_start, time_end, task});  
     }
-
-void remove_task()
-    {
-        std::cout << "input date : " << std::endl;
-        std::string date;
-        std::getline(std::cin, date, '\n');
-
-        auto iter_find = set_data.find(date);
-        if (iter_find == set_data.end()) {
-            std::cout << "error" << std::endl;
-            return;
-        }
-
-        int i = 0;
-        auto &ref_set = set_data[date];
-        for (auto &[start_time, end_time, c_task] : ref_set)
-        {
-            std::cout << ++i << ". " << start_time << "-" << end_time << std::endl
-                      << c_task << std::endl;
-        }
-
-        int index;
-        std::cin >> index;
-        if (index < 0 || index > i)
-        {
-            ;//throw "hui";
-        }
-
-        int index1 = 1;
-        for (auto iter = ref_set.begin(); iter != ref_set.end(); ++iter)
-        {
-            if (index1 == index)
-            {
-                ref_set.erase(iter);
-                // break;
-                if (ref_set.empty())
-                {
-                    set_data.erase(date);
-                }
+    
+    std::set<data_el>::iterator select(std::set<data_el>& ref_set, size_t select_index) {
+        if (1 <= select_index && select_index <= ref_set.size()) {
+            auto it_select = ref_set.begin();
+            for(size_t i = 1; i < select_index; ++i) {
+                ++it_select;
             }
-            index1++;
+            return it_select;
+        } else {
+            throw "task with number n is not in the list";
+        }
+    } 
+
+    void remove(const std::string& date, size_t select_index) {
+        if (auto it_find = set_data.find(date); it_find != set_data.end()) {
+            auto& ref_set = it_find->second;
+            auto it_erase = select(ref_set, select_index);
+            ref_set.erase(it_erase);
+            if (ref_set.empty()) {
+                set_data.erase(it_find);
+            }
+        } else {
+            throw "there are no tasks for this date";
         }
     }
     
