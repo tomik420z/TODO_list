@@ -137,23 +137,6 @@ public:
         }
     }
     
-<<<<<<< HEAD
-    void remove(const std::string& date, size_t select_index) {
-        if (auto it_find = set_data.find(date); it_find != set_data.end()) {
-            auto& ref_set = it_find->second;
-            print_data_set(ref_set);
-            if (1 <= select_index && select_index <= ref_set.size()) {
-                auto it_erase = ref_set.begin();
-                for(size_t i = 1; i < select_index; ++i) {
-                    ++it_erase;
-                }
-                ref_set.erase(it_erase);
-                if (ref_set.empty()) {
-                    set_data.erase(it_find);
-                }
-            } else {
-                throw "task with number n is not in the list"
-=======
     std::set<data_el>::iterator select(std::set<data_el>& ref_set, size_t select_index) {
         if (1 <= select_index && select_index <= ref_set.size()) {
             auto it_select = ref_set.begin();
@@ -173,18 +156,12 @@ public:
             ref_set.erase(it_erase);
             if (ref_set.empty()) {
                 set_data.erase(it_find);
->>>>>>> remotes/origin/branch_dev3
             }
         } else {
             throw "there are no tasks for this date";
         }
     }
-<<<<<<< HEAD
-=======
-    
 
->>>>>>> remotes/origin/branch_dev3
-    
     ~data_task() {
 
     }
