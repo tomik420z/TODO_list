@@ -31,10 +31,10 @@
                 "-g",
                 "-std=c++17",
                 "-O3",
-                "-lboost_date_time-mgw112-mt-s-x64-1_68",
                 "${file}",
                 "-o",
                 "${fileDirname}\\${fileBasenameNoExtension}.exe",
+                "-lboost_date_time-mgw112-mt-s-x64-1_68",
             ],
             "options": {
                 "cwd": "C:/mingw64"

@@ -5,6 +5,7 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/foreach.hpp>
 #include <cassert>
 #include <exception>
@@ -16,7 +17,7 @@
 #include "check_date.h"
 
 namespace property = boost::property_tree;
-
+namespace calendar = boost::gregorian;
 
 struct data_el {
     std::string start_time;
@@ -48,8 +49,13 @@ protected:
         ptree_t list_nodes = in_root.get_child("tasks");
 
         for(const auto& [ingnore_path, node_values] : list_nodes) {
-        
+            
             std::string date = node_values.get<std::string>("date");
+            try {
+                calendar::date yymmdd = calendar::from_string(date);
+            } catch(...) {
+                throw "incorrect format date";
+            }
             std::string start_time = node_values.get<std::string>("start_time"), 
                         end_time = node_values.get<std::string>("end_time"), 
                         task = node_values.get<std::string>("task");
@@ -58,7 +64,6 @@ protected:
             } else {
                 std::cout << "error time" << std::endl;
             }
-
         }
     }
 
@@ -114,6 +119,12 @@ public:
     }
 
     void add_new_task(std::string&& date, std::string&& task, std::string&& time_start, std::string&& time_end) {
+        if (time_start <= time_end) {
+            throw "incorrect time interval";
+        }
+        if (!checking_time::check(time_start) || !checking_time::check(time_end)) {
+            throw "incorrect format time";
+        }
         if (auto it_find = set_data.find(date); it_find != set_data.end()) {
             auto& ref_set = it_find->second;
             
@@ -170,6 +181,9 @@ public:
 
     void reschedule_the_event(const std::string& date, size_t select_index, 
                                 std::string&& new_date, std::string&& new_start, std::string&& new_end) {
+        if (new_start >= new_end) {
+            throw "incorrect time interval";
+        }
         if (auto it_find = set_data.find(date); it_find != set_data.end()) {
             auto ref_set = it_find->second;
             auto it_erase = select(ref_set, select_index);
