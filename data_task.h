@@ -99,6 +99,7 @@ protected:
     }
 
 public:
+    using container = decltype(set_data);
     data_task(const char* f_name) : file_name(f_name) {
         property::read_json(f_name, in_root);
         fill_set_data();
