@@ -2,6 +2,7 @@
 #ifndef MENU_TASK_H
 #define MENU_TASK_H
 #include "data_task.h"
+#include <windows.h>
 
 class menu_task {
     static void print_menu() {
@@ -42,15 +43,36 @@ class menu_task {
         }
     }
 
+    static int parse_from_string(const std::string str) {
+        int num = 0;
+        for(auto ch : str) {
+            if (isdigit(ch)) {
+                num = num * 10 + (ch - '0');
+            } else {
+                throw std::string("you need to enter a number from 1 to 6");
+            }
+        }
+        return num;
+
+    } 
+
 public:
 
     static void exec(const char* f_name) {
+        HANDLE h;
+        h = GetStdHandle(STD_OUTPUT_HANDLE); 
         data_task data(f_name);
         int select_index = 0;
+        system("cls");
+        print_menu();
         while(select_index != -1) {
-            menu_task::print_menu();
-            std::cin >> select_index;
             try {
+                std::string str_num;
+                std::cout << "select a number from 1 to 6" << std::endl;
+                std::cin >> str_num;
+                select_index = menu_task::parse_from_string(str_num);
+                system("cls");
+                print_menu();
                 switch(select_index) {
                 case 1: 
                     {
@@ -64,6 +86,10 @@ public:
                         std::cout << "enter final time:" << std::endl;
                         std::string new_end = input_end_time();
                         data.add_new_task(std::move(new_date), std::move(new_task), std::move(new_start), std::move(new_end));
+                        SetConsoleTextAttribute(h, 02);
+                        std::cout << "task added successfully!" << std::endl;
+                        SetConsoleTextAttribute(h, 07);
+
                         break;
                     }
                 case 2:
@@ -75,11 +101,17 @@ public:
                             auto& ref_set = it_find->second;
                             data.print_data_set(ref_set);
                             size_t select_index = 0;
+                            std::cout << "select number from " << 1 << " to " << ref_set.size() << ":" << std::endl;
                             std::cin >> select_index;
                             menu_task::cin_get();
                             data.remove(erase_date, select_index);
+                            SetConsoleTextAttribute(h, 02);
+                            std::cout << "task remove successfully!" << std::endl;
+                            SetConsoleTextAttribute(h, 07);
                         } else {
+                            SetConsoleTextAttribute(h, 04);
                             std::cout << "no events for this date" << std::endl;
+                            SetConsoleTextAttribute(h, 07);   
                         }
                         break;
                     }
@@ -92,6 +124,7 @@ public:
                             auto& ref_set = it_find->second;
                             data.print_data_set(ref_set);
                             size_t select_index = 0;
+                            std::cout << "select number from " << 1 << " to " << ref_set.size() << ":" << std::endl;
                             std::cin >> select_index;
                             menu_task::cin_get();
                             std::cout << "enter new date:" << std::endl;
@@ -101,8 +134,13 @@ public:
                             std::cout << "input new time finish:" << std::endl; 
                             std::string new_end = input_end_time(); 
                             data.reschedule_the_event(erase_date, select_index, std::move(new_date), std::move(new_start), std::move(new_end));
+                            SetConsoleTextAttribute(h, 02);
+                            std::cout << "task remove successfully!" << std::endl;
+                            SetConsoleTextAttribute(h, 07);
                         } else {
+                            SetConsoleTextAttribute(h, 04);
                             std::cout << "no events for this date" << std::endl;
+                            SetConsoleTextAttribute(h, 07);
                         }
                         break;
                     }
@@ -127,12 +165,16 @@ public:
                     }
                 default:
                     {                
-                        std::cout << "you need to enter a number from 1 to 6" << std::endl;
+                        SetConsoleTextAttribute(h, 04);
+                        std::cout << "error: " << "you need to enter a number from 1 to 6" << std::endl;
+                        SetConsoleTextAttribute(h, 07);
                         break;
                     }
                 }
-            } catch(std::string& msg) {
-                std::cout << msg << std::endl;
+            } catch(const std::string& msg) {
+                SetConsoleTextAttribute(h, 04);
+                std::cout << "error: " << msg << std::endl;
+                SetConsoleTextAttribute(h, 07);
             }
         } 
 
