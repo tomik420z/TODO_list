@@ -15,6 +15,7 @@
 #include <unordered_map>
 #include <set>
 #include "check_date.h"
+#include "exception_data_task.h"
 
 namespace property = boost::property_tree;
 namespace calendar = boost::gregorian;
@@ -54,15 +55,17 @@ protected:
             try {
                 calendar::date yymmdd = calendar::from_string(date);
             } catch(...) {
-                throw "incorrect format date";
+                throw exception_data_task::incorrect_format_date();
             }
             std::string start_time = node_values.get<std::string>("start_time"), 
                         end_time = node_values.get<std::string>("end_time"), 
                         task = node_values.get<std::string>("task");
             if (checking_time::check(start_time) && checking_time::check(end_time)) {
                 set_data[date].emplace(data_el{std::move(start_time), std::move(end_time), std::move(task)});
+            } else if (start_time >= end_time) {
+                throw exception_data_task::incorrect_format_interval();
             } else {
-                std::cout << "error time" << std::endl;
+                throw exception_data_task::incorrect_format_time();
             }
         }
     }
@@ -119,12 +122,19 @@ public:
     }
 
     void add_new_task(std::string&& date, std::string&& task, std::string&& time_start, std::string&& time_end) {
-        if (time_start <= time_end) {
-            throw "incorrect time interval";
+        try {
+            calendar::date yymmdd = calendar::from_string(date);
+            }
+        catch(...) {
+            throw exception_data_task::incorrect_format_date();
         }
         if (!checking_time::check(time_start) || !checking_time::check(time_end)) {
-            throw "incorrect format time";
+            throw exception_data_task::incorrect_format_time();
         }
+        if (time_start <= time_end) {
+            throw exception_data_task::incorrect_format_interval();
+        }
+
         if (auto it_find = set_data.find(date); it_find != set_data.end()) {
             auto& ref_set = it_find->second;
             
@@ -148,7 +158,7 @@ public:
             if (flag_insert) {
                 ref_set.insert(data_el{std::move(time_start), std::move(time_end), std::move(task)});
             } else {
-                throw "error";
+                throw exception_data_task::task_is_superimposed_on_another();
             }
              
 
@@ -165,24 +175,40 @@ public:
             }
             return it_select;
         } else {
-            throw "task with number n is not in the list";
+            throw exception_data_task::missing_value_in_the_list(select_index);
         }
     } 
 
     void remove(const std::string& date, size_t select_index) {
+        try {
+            calendar::date yymmdd = calendar::from_string(date);
+            }
+        catch(...) {
+            throw exception_data_task::incorrect_format_date();
+        }
         if (auto it_find = set_data.find(date); it_find != set_data.end()) {
             auto& ref_set = it_find->second;
             auto it_erase = select(ref_set, select_index);
             erase(ref_set, it_erase, it_find);
         } else {
-            throw "there are no tasks for this date";
+            throw exception_data_task::non_existent_date();
         }
     }
 
     void reschedule_the_event(const std::string& date, size_t select_index, 
                                 std::string&& new_date, std::string&& new_start, std::string&& new_end) {
+        try {
+            calendar::date yymmdd = calendar::from_string(new_date);
+            }
+        catch(...) {
+            throw exception_data_task::incorrect_format_date();
+        }
+        if (!checking_time::check(new_start) || !checking_time::check(new_end)) {
+            throw exception_data_task::incorrect_format_time();
+        }
+
         if (new_start >= new_end) {
-            throw "incorrect time interval";
+            throw exception_data_task::incorrect_format_interval();
         }
         if (auto it_find = set_data.find(date); it_find != set_data.end()) {
             auto ref_set = it_find->second;
@@ -192,7 +218,7 @@ public:
             add_new_task(std::move(new_date), std::move(task), std::move(new_start), std::move(new_end));
 
         } else {
-            throw "there are no tasks for this date";
+            throw exception_data_task::non_existent_date();
         }
     } 
 
@@ -208,6 +234,12 @@ public:
     }
 
     void show_tasks_for_the_current_day(const std::string& date) {
+        try {
+            calendar::date yymmdd = calendar::from_string(date);
+            }
+        catch(...) {
+            throw exception_data_task::incorrect_format_date();
+        }
         std::cout << "date: " << date << std::endl;
         if (auto it = set_data.find(date); it != set_data.end()) {
             for (const auto& [c_task ,c_time_start, c_time_end] : it->second) {
