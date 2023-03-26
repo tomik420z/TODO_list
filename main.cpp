@@ -4,6 +4,8 @@ int main(int argc, char*argv[]) {
     data_task d(argv[1]);
 
     try {
+        d.add_new_task("12.03.2024", "learn algorithm", "15:50", "16:59");
+        d.show_tasks_for_the_current_day("12.03.2024");
         d.print_data();
         d.reschedule_the_event("27.04.2023", 1, "28.04.2023", "23:00", "23:59");
         //d.remove("11.03.2023", 2);

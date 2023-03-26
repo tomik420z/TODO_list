@@ -1,3 +1,5 @@
 /.vscode
-*.exe
+/*.exe
 /dataset
+/main.cpp
+/main.exe
