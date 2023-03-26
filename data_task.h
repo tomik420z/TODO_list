@@ -176,11 +176,14 @@ public:
     }
 
     void show_tasks_for_the_current_day(const std::string& date) {
-
+        std::cout << "date: " << date << std::endl;
         if (auto it = set_data.find(date); it != set_data.end()) {
-            for (const auto& [c_time, c_date] : it->second) {
-                std::cout << c_time << " " << c_date << std::endl;
+            for (const auto& [c_task ,c_time_start, c_time_end] : it->second) {
+                std::cout << "time: " << c_time_start << "-" << c_time_end  <<  std::endl;
+                std::cout << "task: " << c_task << std::endl;
             }
+        } else {
+            std::cout << "There are no scheduled tasks for this date" << std::endl;
         }
     }
 

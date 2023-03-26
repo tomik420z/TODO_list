@@ -4,11 +4,9 @@ int main(int argc, char*argv[]) {
     data_task d(argv[1]);
 
     try {
+        d.add_new_task("12.03.2024", "learn algorithm", "15:50", "16:59");
+        d.show_tasks_for_the_current_day("12.03.2024");
         d.print_data();
-        d.remove("11.03.2023", 2);
-        d.remove("11.03.2023", 1);
-        //d.add_new_task("12.03.2024", "learn c++", "11:42", "11:59");
-        
     } catch(const char* e) {
         std::cout << e << std::endl;
     }
