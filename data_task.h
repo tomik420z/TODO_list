@@ -81,6 +81,15 @@ protected:
         }
     }
 
+    void erase(std::set<data_el>& ref_set, std::set<data_el>::iterator it_erase, 
+                                decltype(set_data)::iterator it_find) {
+        ref_set.erase(it_erase);
+        if (ref_set.empty()) {
+            set_data.erase(it_find);
+        }
+        
+    }
+
 public:
     data_task(const char* f_name) : file_name(f_name) {
         property::read_json(f_name, in_root);
@@ -153,18 +162,27 @@ public:
         if (auto it_find = set_data.find(date); it_find != set_data.end()) {
             auto& ref_set = it_find->second;
             auto it_erase = select(ref_set, select_index);
-            ref_set.erase(it_erase);
-            if (ref_set.empty()) {
-                set_data.erase(it_find);
-            }
+            erase(ref_set, it_erase, it_find);
         } else {
             throw "there are no tasks for this date";
         }
     }
 
-    ~data_task() {
+    void reschedule_the_event(const std::string& date, size_t select_index, 
+                                std::string&& new_date, std::string&& new_start, std::string&& new_end) {
+        if (auto it_find = set_data.find(date); it_find != set_data.end()) {
+            auto ref_set = it_find->second;
+            auto it_erase = select(ref_set, select_index);
+            std::string task = it_erase->task;
+            erase(ref_set, it_erase, it_find);
+            add_new_task(std::move(new_date), std::move(task), std::move(new_start), std::move(new_end));
 
-    }
+        } else {
+            throw "there are no tasks for this date";
+        }
+    } 
+
+    ~data_task() {}
 
     void print_data() const {
         for(const auto& [key, value] : set_data) {
