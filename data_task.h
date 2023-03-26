@@ -70,13 +70,6 @@ protected:
         }
     }
 
-    void print_data_set(const std::set<data_el> & set) {
-        size_t ind = 0;
-        for(const auto & [start_time, end_time, task]  : set) {
-            std::cout << ++ind << ". " << start_time << "-" << end_time << std::endl;
-            std::cout << "task: " << task << std::endl;
-        }
-    }
 
     bool check_interval(const std::string& start_interval, const std::string& end_interval, 
                         const std::string& new_start, const std::string& new_end) {
@@ -132,7 +125,7 @@ public:
         if (!checking_time::check(time_start) || !checking_time::check(time_end)) {
             throw exception_data_task::incorrect_format_time();
         }
-        if (time_start <= time_end) {
+        if (time_start >= time_end) {
             throw exception_data_task::incorrect_format_interval();
         }
 
@@ -234,7 +227,7 @@ public:
         }
     }
 
-    void show_tasks_for_the_current_day(const std::string& date) {
+    void show_tasks_for_the_given_day(const std::string& date) {
         try {
             calendar::date yymmdd = calendar::from_string(date);
             }
@@ -243,7 +236,7 @@ public:
         }
         std::cout << "date: " << date << std::endl;
         if (auto it = set_data.find(date); it != set_data.end()) {
-            for (const auto& [c_task ,c_time_start, c_time_end] : it->second) {
+            for (const auto& [c_time_start, c_time_end, c_task] : it->second) {
                 std::cout << "time: " << c_time_start << "-" << c_time_end  <<  std::endl;
                 std::cout << "task: " << c_task << std::endl;
             }
@@ -252,6 +245,25 @@ public:
         }
     }
 
+    decltype(auto) choose_date(const std::string& date) {
+        return set_data.find(date);
+    }
+
+    container::iterator begin() noexcept {
+        return set_data.begin();
+    }
+
+    container::iterator end() noexcept {
+        return set_data.end();
+    }
+
+    void print_data_set(const std::set<data_el> & set) {
+        size_t ind = 0;
+        for(const auto & [start_time, end_time, task]  : set) {
+            std::cout << ++ind << ". " << start_time << "-" << end_time << std::endl;
+            std::cout << "task: " << task << std::endl;
+        }
+    }
 };
 
 #endif
