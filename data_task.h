@@ -240,6 +240,7 @@ public:
         }
         std::cout << "date: " << date << std::endl;
         HANDLE h;
+        size_t index = 0;
         h = GetStdHandle(STD_OUTPUT_HANDLE); 
         if (auto it = set_data.find(date); it != set_data.end()) {
             std::cout << "-------------------------------------------\n";
@@ -248,14 +249,21 @@ public:
                 if (priority_lvl == 1) {
                     clr = 02;
                 } else if (priority_lvl == 2) {
-                    clr = 014;
+                    clr = 06;
                 } else if (priority_lvl == 3) {
                     clr = 04;
                 }
                 SetConsoleTextAttribute(h, clr);
+                std::cout << ++index << ". task: " << c_task << std::endl;
                 std::cout << "time: " << c_time_start << "-" << c_time_end  <<  std::endl;
-                std::cout << "task: " << c_task << std::endl;
-                std::cout << "priority: " << priority_lvl << std::endl;
+                std::cout << "priority: ";
+                if(priority_lvl == 1) {
+                    std::cout << "low" << std::endl;
+                } else if(priority_lvl == 2) {
+                    std::cout << "medium" << std::endl;
+                } else if(priority_lvl == 3) {  
+                    std::cout << "high" << std::endl;
+                }
                 SetConsoleTextAttribute(h, 07);
             }
             std::cout << "-------------------------------------------\n";
@@ -278,10 +286,28 @@ public:
 
     void print_data_set(const std::set<data_el> & set) {
         size_t ind = 0;
+        HANDLE h;
+        h = GetStdHandle(STD_OUTPUT_HANDLE); 
         for(const auto & [start_time, end_time, task, priority_lvl]  : set) {
+            WORD clr;
+            if (priority_lvl == 1) {
+                clr = 02;
+            } else if (priority_lvl == 2) {
+                clr = 06;
+            } else if (priority_lvl == 3) {
+                clr = 04;
+            }
+            SetConsoleTextAttribute(h, clr);
             std::cout << ++ind << ". " << start_time << "-" << end_time << std::endl;
             std::cout << "task: " << task << std::endl;
-            std::cout <<"priority: " << priority_lvl << std::endl;
+            if(priority_lvl == 1) {
+                std::cout << "low" << std::endl;
+            } else if(priority_lvl == 2) {
+                std::cout << "medium" << std::endl;
+            } else if(priority_lvl == 3) {  
+                std::cout << "high" << std::endl;
+            }
+            SetConsoleTextAttribute(h, 07);
         }
     }
 };
