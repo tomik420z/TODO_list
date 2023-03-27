@@ -131,6 +131,9 @@ public:
         if (time_start >= time_end) {
             throw exception_data_task::incorrect_format_interval();
         }
+        if(prioryty_lvl < 0 || prioryty_lvl > 3) {
+            throw exception_data_task::missing_value_in_the_list(3);
+        }
 
         if (auto it_find = set_data.find(date); it_find != set_data.end()) {
             auto& ref_set = it_find->second;
@@ -246,7 +249,7 @@ public:
             for (const auto& [c_time_start, c_time_end, c_task, priority_lvl] : it->second) {
                 WORD clr;
                 if (priority_lvl == 1) {
-                    clr = 02;
+                    clr = 02; 
                 } else if (priority_lvl == 2) {
                     clr = 06;
                 } else if (priority_lvl == 3) {
@@ -257,9 +260,9 @@ public:
                 std::cout << "time: " << c_time_start << "-" << c_time_end  <<  std::endl;
                 
                 std::cout << "priority: ";
-                if (clr == 1) {
+                if (priority_lvl == 1) {
                     std::cout << "low" << std::endl;
-                } else if(clr == 2) {
+                } else if(priority_lvl == 2) {
                     std::cout << "medium" << std::endl;
                 } else {
                     std::cout << "high" << std::endl;
@@ -305,13 +308,12 @@ public:
             SetConsoleTextAttribute(h, clr);
             std::cout << ++ind << ". " << start_time << "-" << end_time << std::endl;
             std::cout << "task: " << task << std::endl;
-            std::cout <<"priority: ";
             std::cout << "priority: ";
-            if (clr == 1) {
+            if (priority_lvl == 1) {
                 std::cout << "low" << std::endl;
-            } else if(clr == 2) {
+            } else if(priority_lvl == 2) {
                 std::cout << "medium" << std::endl;
-            } else {
+            } else { 
                 std::cout << "high" << std::endl;
             }
             SetConsoleTextAttribute(h, 07);

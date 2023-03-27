@@ -15,7 +15,7 @@ public:
 
     static std::string incorrect_format_date() { return std::string("incorrect format date"); }
 
-    static std::string incorrect_format_interval() { return std::string("incorrect format interval"); }
+    static std::string incorrect_format_interval() { return std::string("incorrect format time interval"); }
 
     static std::string missing_value_in_the_list(size_t index_select) { return std::string("task with number ") + 
                                                     std::to_string(index_select) + std::string(" is not in the list"); }

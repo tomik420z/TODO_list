@@ -1,14 +1,12 @@
 #include "data_task.h"
 #include "menu_task.h"
 #include <boost/exception/all.hpp>
-int main(int argc, char*argv[]) {
+int main() {
     try {
-        menu_task::exec(argv[1]);
+        menu_task::exec("dataset/tasks.json");
     } catch(const char* e) {
         std::cout << e << std::endl;
-    } catch(boost::exception & exc) {
-        
-    }
+    } 
 
     
     

@@ -6,6 +6,8 @@
 
 class menu_task {
     static void print_menu() {
+        std::cout << "MENU" << std::endl;
+        std::cout << "--------------------------------" << std::endl;
         std::cout << "1. ADD NEW TASK" << std::endl;
         std::cout << "2. REMOVE TASK" << std::endl;
         std::cout << "3. RESCHEDULE THE EVENT" << std::endl;
@@ -62,9 +64,11 @@ class menu_task {
 
     } 
 
+
 public:
 
     static void exec(const char* f_name) {
+        
         HANDLE h;
         h = GetStdHandle(STD_OUTPUT_HANDLE); 
         data_task data(f_name);
@@ -104,6 +108,10 @@ public:
                         std::cin >> str_select;
                         size_t select_priority = menu_task::parse_from_string(str_select);
                         data.add_new_task(std::move(new_date), std::move(new_task), std::move(new_start), std::move(new_end), select_priority);
+                        
+                        system("cls");
+                        print_menu();
+                        
                         SetConsoleTextAttribute(h, 02);
                         std::cout << "task added successfully!" << std::endl;
                         SetConsoleTextAttribute(h, 07);
@@ -118,22 +126,27 @@ public:
                         if (auto it_find = data.choose_date(erase_date); it_find != data.end()) {
                             auto& ref_set = it_find->second;
                             data.print_data_set(ref_set);
-                            std::cout << ref_set.size() + 1 << ". back" << std::endl;
+                            std::cout << ref_set.size() + 1 << ". ya peredumal udalat'" << std::endl;
+                            std::string select_str;
                             size_t select_index = 0;
-                            std::cout << "select number from " << 1 << " to " << ref_set.size() << ":" << std::endl;
-                            std::cin >> select_index;
+                            std::cout << "select number from " << 1 << " to " << ref_set.size() + 1 << ":" << std::endl;
+                            std::cin >> select_str;
+                            select_index = menu_task::parse_from_string(select_str);
                             if (select_index == ref_set.size() + 1) {
+                                system("cls");
+                                print_menu();
                                 break;
                             }
                             menu_task::cin_get();
                             data.remove(erase_date, select_index);
+                            
+                            system("cls");
+                            print_menu();
                             SetConsoleTextAttribute(h, 02);
                             std::cout << "task remove successfully!" << std::endl;
                             SetConsoleTextAttribute(h, 07);
                         } else {
-                            SetConsoleTextAttribute(h, 04);
-                            std::cout << "no events for this date" << std::endl;
-                            SetConsoleTextAttribute(h, 07);   
+                            throw std::string("no events for this date");
                         }
                         break;
                     }
@@ -145,11 +158,15 @@ public:
                         if (auto it_find = data.choose_date(erase_date); it_find != data.end()) {
                             auto& ref_set = it_find->second;
                             data.print_data_set(ref_set);
-                            std::cout << ref_set.size() + 1 << ". back" << std::endl;
+                            std::cout << ref_set.size() + 1 << ". ya peredumal perenosit'" << std::endl;
+                            std::string select_str; 
                             size_t select_index = 0;
-                            std::cout << "select number from " << 1 << " to " << ref_set.size() << ":" << std::endl;
-                            std::cin >> select_index;
+                            std::cout << "select number from " << 1 << " to " << ref_set.size() + 1 << ":" << std::endl;
+                            std::cin >> select_str;
+                            select_index = menu_task::parse_from_string(select_str);
                             if (select_index == ref_set.size() + 1) {
+                                system("cls");
+                                print_menu();
                                 break;
                             }
                             menu_task::cin_get();
@@ -160,13 +177,14 @@ public:
                             std::cout << "input new time finish:" << std::endl; 
                             std::string new_end = input_end_time(); 
                             data.reschedule_the_event(erase_date, select_index, std::move(new_date), std::move(new_start), std::move(new_end));
+                            
+                            system("cls");
+                            print_menu();
                             SetConsoleTextAttribute(h, 02);
-                            std::cout << "task remove successfully!" << std::endl;
+                            std::cout << "task reschedule successfully!" << std::endl;
                             SetConsoleTextAttribute(h, 07);
                         } else {
-                            SetConsoleTextAttribute(h, 04);
-                            std::cout << "no events for this date" << std::endl;
-                            SetConsoleTextAttribute(h, 07);
+                            throw std::string("no events for this date");
                         }
                         break;
                     }
@@ -191,13 +209,13 @@ public:
                     }
                 default:
                     {                
-                        SetConsoleTextAttribute(h, 04);
-                        std::cout << "error: " << "you need to enter a number from 1 to 6" << std::endl;
-                        SetConsoleTextAttribute(h, 07);
+                        throw std::string("you need to enter a number from 1 to 6");
                         break;
                     }
                 }
             } catch(const std::string& msg) {
+                system("cls");
+                print_menu();
                 SetConsoleTextAttribute(h, 04);
                 std::cout << "error: " << msg << std::endl;
                 SetConsoleTextAttribute(h, 07);

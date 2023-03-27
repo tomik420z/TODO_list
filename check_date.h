@@ -20,6 +20,9 @@ struct checking_time
             ++count_dig;
             ++it;
         }
+        if (count_dig > 2) {
+            return false;
+        }
         if (it == time.end()) {
             return false;
         }
@@ -37,6 +40,9 @@ struct checking_time
             }
             ++it;
             ++count_dig;
+        }
+        if (count_dig > 2) {
+            return false;
         }
 
         return count_dig == 2 && hours < 24 && minutes < 60;
