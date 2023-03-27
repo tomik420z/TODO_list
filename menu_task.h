@@ -29,12 +29,18 @@ class menu_task {
     static std::string input_start_time() {
         std::string new_start;
         std::getline(std::cin, new_start, '\n');
+        if (new_start.size() == 4) {
+            new_start.insert(new_start.begin(), '0');
+        }
         return new_start;
     }
 
     static std::string input_end_time() {
         std::string new_end;
         std::getline(std::cin, new_end, '\n');
+        if (new_end.size() == 4) {
+            new_end.insert(new_end.begin(), '0');
+        }
         return new_end;
     }
     static void cin_get() {
