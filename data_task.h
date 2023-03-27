@@ -16,7 +16,7 @@
 #include <set>
 #include "check_date.h"
 #include "exception_data_task.h"
-
+#include <windows.h>
 namespace property = boost::property_tree;
 namespace calendar = boost::gregorian;
 
@@ -51,7 +51,7 @@ protected:
         ptree_t list_nodes = in_root.get_child("tasks");
 
         for(const auto& [ingnore_path, node_values] : list_nodes) {
-            
+        
             std::string date = node_values.get<std::string>("date");
             try {
                 calendar::date yymmdd = calendar::from_string(date);
@@ -206,7 +206,7 @@ public:
 
         if (new_start >= new_end) {
             throw exception_data_task::incorrect_format_interval();
-        }
+    }
         if (auto it_find = set_data.find(date); it_find != set_data.end()) {
             auto ref_set = it_find->second;
             auto it_erase = select(ref_set, select_index);
@@ -237,13 +237,34 @@ public:
         catch(...) {
             throw exception_data_task::incorrect_format_date();
         }
+        h = GetStdHandle(STD_OUTPUT_HANDLE); 
         std::cout << "date: " << date << std::endl;
         if (auto it = set_data.find(date); it != set_data.end()) {
+            std::cout << "---------------------------------" << std::endl;
             for (const auto& [c_time_start, c_time_end, c_task, priority_lvl] : it->second) {
+                WORD clr;
+                if (priority_lvl == 1) {
+                    clr = 02;
+                } else if (priority_lvl == 2) {
+                    clr = 06;
+                } else if (priority_lvl == 3) {
+                    clr = 04;
+                }
+                SetConsoleTextAttribute(h, clr);
                 std::cout << "time: " << c_time_start << "-" << c_time_end  <<  std::endl;
                 std::cout << "task: " << c_task << std::endl;
-                std::cout << "priority: " << priority_lvl << std::endl;
+                std::cout << "priority: ";
+                if (clr == 1 ) {
+                    std::cout << "low" << std::endl;
+                } else(clr == 2) {
+                    std::cout << "medium" << std::endl;
+                } else {
+                    std::cout << "high" << std::endl;
+                }
+                SetConsoleTextAttribute(h, 07);
             }
+            
+            std::cout << "---------------------------------" << std::endl;
         } else {
             std::cout << "There are no scheduled tasks for this date" << std::endl;
         }
