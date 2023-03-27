@@ -85,7 +85,16 @@ public:
                         std::string new_start = input_start_time();
                         std::cout << "enter final time:" << std::endl;
                         std::string new_end = input_end_time();
-                        data.add_new_task(std::move(new_date), std::move(new_task), std::move(new_start), std::move(new_end));
+                        std::cout << "enter priority" << std::endl;
+                        std::cout << "1. low priority" << std::endl;
+                        std::cout << "2. medium priority" << std::endl;
+                        std::cout << "3. high priority" << std::endl;
+                        std::string str_select;
+                        std::cout << "select a number from 1 to 3" << std::endl;
+                        std::cin >> str_select;
+                        size_t select_priority = menu_task::parse_from_string(str_select);
+                        std::cin >> select_priority;
+                        data.add_new_task(std::move(new_date), std::move(new_task), std::move(new_start), std::move(new_end), select_priority);
                         SetConsoleTextAttribute(h, 02);
                         std::cout << "task added successfully!" << std::endl;
                         SetConsoleTextAttribute(h, 07);

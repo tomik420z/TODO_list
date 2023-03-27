@@ -24,6 +24,7 @@ struct data_el {
     std::string start_time;
     std::string end_time;
     std::string task;
+    size_t priority_lvl;
 
     std::pair<std::string, std::string> get_time_interval() const {
         return std::pair{start_time, end_time};
@@ -60,8 +61,9 @@ protected:
             std::string start_time = node_values.get<std::string>("start_time"), 
                         end_time = node_values.get<std::string>("end_time"), 
                         task = node_values.get<std::string>("task");
+            size_t priority_lvl = node_values.get<size_t>("priority_lvl");
             if (checking_time::check(start_time) && checking_time::check(end_time)) {
-                set_data[date].emplace(data_el{std::move(start_time), std::move(end_time), std::move(task)});
+                set_data[date].emplace(data_el{std::move(start_time), std::move(end_time), std::move(task), priority_lvl});
             } else if (start_time >= end_time) {
                 throw exception_data_task::incorrect_format_interval();
             } else {
@@ -101,12 +103,13 @@ public:
     void write_to_json() {
         property::ptree list_tasks;
         for(auto& [key, values] : set_data) {
-            for(auto& [start_time, end_time, c_task] : values) {
+            for(auto& [start_time, end_time, c_task, priority_lvl] : values) {
                 property::ptree node;
                 node.put("date", std::move(key));
                 node.put("start_time", std::move(start_time));
                 node.put("end_time", std::move(end_time));
                 node.put("task", std::move(c_task));
+                node.put("priority_lvl", priority_lvl);
                 list_tasks.push_back(std::make_pair("", node));
             }
         }
@@ -115,7 +118,7 @@ public:
         property::write_json(file_name, out_root);
     }
 
-    void add_new_task(std::string&& date, std::string&& task, std::string&& time_start, std::string&& time_end) {
+    void add_new_task(std::string&& date, std::string&& task, std::string&& time_start, std::string&& time_end, size_t prioryty_lvl) {
         try {
             calendar::date yymmdd = calendar::from_string(date);
             }
@@ -132,7 +135,7 @@ public:
         if (auto it_find = set_data.find(date); it_find != set_data.end()) {
             auto& ref_set = it_find->second;
             
-            auto iter_next = ref_set.upper_bound(data_el{time_start, std::string{}, std::string{}});
+            auto iter_next = ref_set.upper_bound(data_el{time_start, std::string{}, std::string{}, size_t{}});
             bool flag_insert = true;
             if (iter_next != ref_set.end()) {
                 const auto& [next_start, next_end] = iter_next->get_time_interval();
@@ -150,14 +153,14 @@ public:
             }
 
             if (flag_insert) {
-                ref_set.insert(data_el{std::move(time_start), std::move(time_end), std::move(task)});
+                ref_set.insert(data_el{std::move(time_start), std::move(time_end), std::move(task), prioryty_lvl});
             } else {
                 throw exception_data_task::task_is_superimposed_on_another();
             }
              
 
         } else {
-            set_data[date].insert(data_el{std::move(time_start), std::move(time_end), std::move(task)});  
+            set_data[date].insert(data_el{std::move(time_start), std::move(time_end), std::move(task), prioryty_lvl});  
         }
     }
     
@@ -208,9 +211,9 @@ public:
             auto ref_set = it_find->second;
             auto it_erase = select(ref_set, select_index);
             std::string task = it_erase->task;
+            size_t priority_lvl = it_erase->priority_lvl;
             erase(ref_set, it_erase, it_find);
-            add_new_task(std::move(new_date), std::move(task), std::move(new_start), std::move(new_end));
-
+            add_new_task(std::move(new_date), std::move(task), std::move(new_start), std::move(new_end), priority_lvl);
         } else {
             throw exception_data_task::non_existent_date();
         }
@@ -221,8 +224,8 @@ public:
     void print_data() const {
         for(const auto& [key, value] : set_data) {
             std::cout << "date " << key  << std::endl;
-            for(const auto& [start_time, end_time, c_task] : value) {
-                std::cout << start_time << "-" << end_time << " " << c_task << std::endl;
+            for(const auto& [start_time, end_time, c_task, prioryty_lvl] : value) {
+                std::cout << start_time << "-" << end_time << " " << c_task  << " " << prioryty_lvl << std::endl;
             }
         }
     }
@@ -236,9 +239,10 @@ public:
         }
         std::cout << "date: " << date << std::endl;
         if (auto it = set_data.find(date); it != set_data.end()) {
-            for (const auto& [c_time_start, c_time_end, c_task] : it->second) {
+            for (const auto& [c_time_start, c_time_end, c_task, priority_lvl] : it->second) {
                 std::cout << "time: " << c_time_start << "-" << c_time_end  <<  std::endl;
                 std::cout << "task: " << c_task << std::endl;
+                std::cout << "priority: " << priority_lvl << std::endl;
             }
         } else {
             std::cout << "There are no scheduled tasks for this date" << std::endl;
@@ -259,9 +263,10 @@ public:
 
     void print_data_set(const std::set<data_el> & set) {
         size_t ind = 0;
-        for(const auto & [start_time, end_time, task]  : set) {
+        for(const auto & [start_time, end_time, task, priority_lvl]  : set) {
             std::cout << ++ind << ". " << start_time << "-" << end_time << std::endl;
             std::cout << "task: " << task << std::endl;
+            std::cout <<"priority: " << priority_lvl << std::endl;
         }
     }
 };
