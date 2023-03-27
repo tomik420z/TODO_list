@@ -249,6 +249,10 @@ public:
         }
     }
 
+    const container& get_container() const noexcept {
+        return set_data;
+    }
+
     decltype(auto) choose_date(const std::string& date) {
         return set_data.find(date);
     }
