@@ -29,12 +29,18 @@ class menu_task {
     static std::string input_start_time() {
         std::string new_start;
         std::getline(std::cin, new_start, '\n');
+        if (new_start.size() == 4) {
+            new_start.insert(new_start.begin(), '0');
+        }
         return new_start;
     }
 
     static std::string input_end_time() {
         std::string new_end;
         std::getline(std::cin, new_end, '\n');
+        if (new_end.size() == 4) {
+            new_end.insert(new_end.begin(), '0');
+        }
         return new_end;
     }
     static void cin_get() {
@@ -86,14 +92,17 @@ public:
                         std::cout << "enter final time:" << std::endl;
                         std::string new_end = input_end_time();
                         std::cout << "enter priority" << std::endl;
+                        SetConsoleTextAttribute(h, 02);
                         std::cout << "1. low priority" << std::endl;
+                        SetConsoleTextAttribute(h, 06);
                         std::cout << "2. medium priority" << std::endl;
+                        SetConsoleTextAttribute(h, 04);
                         std::cout << "3. high priority" << std::endl;
+                        SetConsoleTextAttribute(h, 07);
                         std::string str_select;
                         std::cout << "select a number from 1 to 3" << std::endl;
                         std::cin >> str_select;
                         size_t select_priority = menu_task::parse_from_string(str_select);
-                        std::cin >> select_priority;
                         data.add_new_task(std::move(new_date), std::move(new_task), std::move(new_start), std::move(new_end), select_priority);
                         SetConsoleTextAttribute(h, 02);
                         std::cout << "task added successfully!" << std::endl;
@@ -109,9 +118,13 @@ public:
                         if (auto it_find = data.choose_date(erase_date); it_find != data.end()) {
                             auto& ref_set = it_find->second;
                             data.print_data_set(ref_set);
+                            std::cout << ref_set.size() + 1 << ". back" << std::endl;
                             size_t select_index = 0;
                             std::cout << "select number from " << 1 << " to " << ref_set.size() << ":" << std::endl;
                             std::cin >> select_index;
+                            if (select_index == ref_set.size() + 1) {
+                                break;
+                            }
                             menu_task::cin_get();
                             data.remove(erase_date, select_index);
                             SetConsoleTextAttribute(h, 02);
@@ -132,9 +145,13 @@ public:
                         if (auto it_find = data.choose_date(erase_date); it_find != data.end()) {
                             auto& ref_set = it_find->second;
                             data.print_data_set(ref_set);
+                            std::cout << ref_set.size() + 1 << ". back" << std::endl;
                             size_t select_index = 0;
                             std::cout << "select number from " << 1 << " to " << ref_set.size() << ":" << std::endl;
                             std::cin >> select_index;
+                            if (select_index == ref_set.size() + 1) {
+                                break;
+                            }
                             menu_task::cin_get();
                             std::cout << "enter new date:" << std::endl;
                             std::string new_date = input_date();

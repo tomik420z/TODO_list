@@ -20,6 +20,9 @@ struct checking_time
             ++count_dig;
             ++it;
         }
+        if (it == time.end()) {
+            return false;
+        }
         // ignore ':'
         ++it;
         count_dig = 0;
@@ -35,7 +38,8 @@ struct checking_time
             ++it;
             ++count_dig;
         }
-        return hours < 24 && minutes < 60;
+
+        return count_dig == 2 && hours < 24 && minutes < 60;
     }
 };
 
