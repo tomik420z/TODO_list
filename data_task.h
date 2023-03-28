@@ -33,6 +33,11 @@ struct data_el {
     bool operator<(const data_el& rhs) const noexcept {
         return start_time < rhs.start_time;
     }
+
+    bool operator==(const data_el& rhs) const noexcept {
+        return (start_time == rhs.start_time) && (end_time == rhs.end_time) && 
+               (task == rhs.task) && (priority_lvl == rhs.priority_lvl);
+    }
 };
 
 
