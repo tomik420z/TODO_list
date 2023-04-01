@@ -5,6 +5,13 @@
 #include <windows.h>
 
 class menu_task {
+    static void ignore_spaces() {
+        using std::cin;
+        while (cin.peek() == ' ') {
+            cin.ignore();    
+        }
+    }
+
     static void print_menu() {
         std::cout << "MENU" << std::endl;
         std::cout << "--------------------------------" << std::endl;
@@ -16,9 +23,69 @@ class menu_task {
         std::cout << "6. SAVE AND EXIT" << std::endl;
     }
 
+    static int input_integer() {
+        using std::cin;
+        int result = 0; 
+        ignore_spaces();
+
+        while('0' <= cin.peek() && cin.peek() <= '9') {
+           result = result * 10 + (cin.get() - '0'); 
+        }
+
+        ignore_spaces();
+
+        if (cin.peek() != '\n') {
+            while(cin.peek() != '\n') {
+                cin.ignore();
+            }
+            cin.ignore();
+            
+            throw std::string("you need to enter a number from 1 to 6");
+        }  else {
+            cin.ignore();
+        }
+
+        return result;
+    }
+
     static std::string input_date() {
+        using std::cin;
+        
         std::string new_date;
-        std::getline(std::cin, new_date, '\n');
+        ignore_spaces();
+        
+        while (cin.peek() != ' ' && cin.peek() != '\n') {
+            new_date += cin.get();
+        }
+        
+        ignore_spaces();
+        if (cin.peek() != '\n') {
+            while(cin.peek() != '\n') {
+                cin.ignore();
+            }
+            cin.ignore();
+            throw exception_data_task::incorrect_format_date();
+
+        }  else {
+            cin.ignore();
+        }
+
+        if (new_date == "today") {
+            new_date = calendar::to_sql_string(calendar::day_clock::local_day());
+        } else if (new_date == "tomorrow") {
+            new_date = calendar::to_sql_string(calendar::day_clock::local_day() + calendar::days(1));
+        } else if (new_date == "yesterday") {
+            new_date = calendar::to_sql_string(calendar::day_clock::local_day() - calendar::days(1));
+        } else {
+            try {
+                calendar::date d = calendar::from_string(new_date); 
+            } catch (...) {
+                throw exception_data_task::incorrect_format_date();
+            } 
+        }
+
+        
+
         return new_date;
     }
 
@@ -77,16 +144,14 @@ public:
         print_menu();
         while(select_index != -1) {
             try {
-                std::string str_num;
+            
                 std::cout << "select a number from 1 to 6" << std::endl;
-                std::cin >> str_num;
-                select_index = menu_task::parse_from_string(str_num);
+                select_index = input_integer();
                 system("cls");
                 print_menu();
                 switch(select_index) {
                 case 1: 
                     {
-                        menu_task::cin_get();
                         std::cout << "enter task:"<< std::endl;
                         std::string new_task = input_task();
                         std::cout << "enter date:"<< std::endl;
@@ -103,10 +168,9 @@ public:
                         SetConsoleTextAttribute(h, 04);
                         std::cout << "3. high priority" << std::endl;
                         SetConsoleTextAttribute(h, 07);
-                        std::string str_select;
+                        
                         std::cout << "select a number from 1 to 3" << std::endl;
-                        std::cin >> str_select;
-                        size_t select_priority = menu_task::parse_from_string(str_select);
+                        size_t select_priority = input_integer();
                         data.add_new_task(std::move(new_date), std::move(new_task), std::move(new_start), std::move(new_end), select_priority);
                         
                         system("cls");
@@ -120,24 +184,19 @@ public:
                     }
                 case 2:
                     {
-                        menu_task::cin_get();
                         std::cout << "enter date:"<< std::endl;
                         std::string erase_date = input_date();
                         if (auto it_find = data.choose_date(erase_date); it_find != data.end()) {
                             auto& ref_set = it_find->second;
                             data.print_data_set(ref_set);
                             std::cout << ref_set.size() + 1 << ". ya peredumal udalat'" << std::endl;
-                            std::string select_str;
-                            size_t select_index = 0;
                             std::cout << "select number from " << 1 << " to " << ref_set.size() + 1 << ":" << std::endl;
-                            std::cin >> select_str;
-                            select_index = menu_task::parse_from_string(select_str);
+                            size_t select_index = input_integer();
                             if (select_index == ref_set.size() + 1) {
                                 system("cls");
                                 print_menu();
                                 break;
                             }
-                            menu_task::cin_get();
                             data.remove(erase_date, select_index);
                             
                             system("cls");
@@ -152,24 +211,19 @@ public:
                     }
                 case 3:
                     {
-                        menu_task::cin_get();
                         std::cout << "enter date:"<< std::endl;
                         std::string erase_date = input_date();
                         if (auto it_find = data.choose_date(erase_date); it_find != data.end()) {
                             auto& ref_set = it_find->second;
                             data.print_data_set(ref_set);
                             std::cout << ref_set.size() + 1 << ". ya peredumal perenosit'" << std::endl;
-                            std::string select_str; 
-                            size_t select_index = 0;
                             std::cout << "select number from " << 1 << " to " << ref_set.size() + 1 << ":" << std::endl;
-                            std::cin >> select_str;
-                            select_index = menu_task::parse_from_string(select_str);
+                            size_t select_index = input_integer();   
                             if (select_index == ref_set.size() + 1) {
                                 system("cls");
                                 print_menu();
                                 break;
                             }
-                            menu_task::cin_get();
                             std::cout << "enter new date:" << std::endl;
                             std::string new_date = input_date();
                             std::cout << "enter new time start:" << std::endl;
@@ -190,11 +244,9 @@ public:
                     }
                 case 4: 
                     { 
-                        menu_task::cin_get();
                         std::cout << "enter date:" << std::endl;
-                        std::string input_date;
-                        std::getline(std::cin, input_date, '\n');
-                        data.show_tasks_for_the_given_day(input_date);
+                        std::string date = input_date();
+                        data.show_tasks_for_the_given_day(date);
                         break;
                     }
                 case 5:
