@@ -4,13 +4,10 @@
 int main() {
     try {
         menu_task::exec("dataset/tasks.json");
-    } catch(const char* e) {
-        std::cout << e << std::endl;
-    } 
+    } catch(...) {
 
-    
-    
- 
-
+    }
+   // boost::posix_time::ptime t(boost::posix_time::second_clock::local_time());
+   // std::cout << t << std::endl;
     return 0;
 }

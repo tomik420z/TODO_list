@@ -14,6 +14,7 @@
 #include <string>
 #include <unordered_map>
 #include <set>
+#include <map>
 #include "check_date.h"
 #include "exception_data_task.h"
 #include <windows.h>
@@ -41,10 +42,13 @@ struct data_el {
 };
 
 
+
 class data_task {
+public:
+    using container = std::unordered_map<std::string, std::set<data_el>>;
 protected:
     using ptree_t = boost::property_tree::ptree;
-
+    std::map<std::string, std::set<data_el>*> set_date;
     std::unordered_map<std::string, std::set<data_el>> set_data;
 
     ptree_t in_root;
@@ -69,6 +73,7 @@ protected:
             size_t priority_lvl = node_values.get<size_t>("priority_lvl");
             if (checking_time::check(start_time) && checking_time::check(end_time)) {
                 set_data[date].emplace(data_el{std::move(start_time), std::move(end_time), std::move(task), priority_lvl});
+                set_date[date] = &set_data[date];
             } else if (start_time >= end_time) {
                 throw exception_data_task::incorrect_format_interval();
             } else {
@@ -94,12 +99,12 @@ protected:
         ref_set.erase(it_erase);
         if (ref_set.empty()) {
             set_data.erase(it_find);
+            set_date.erase(it_find->first);
         }
         
     }
 
 public:
-    using container = decltype(set_data);
     data_task(const char* f_name) : file_name(f_name) {
         property::read_json(f_name, in_root);
         fill_set_data();
@@ -162,6 +167,7 @@ public:
 
             if (flag_insert) {
                 ref_set.insert(data_el{std::move(time_start), std::move(time_end), std::move(task), prioryty_lvl});
+                set_date[date] = &ref_set;
             } else {
                 throw exception_data_task::task_is_superimposed_on_another();
             }
@@ -169,6 +175,7 @@ public:
 
         } else {
             set_data[date].insert(data_el{std::move(time_start), std::move(time_end), std::move(task), prioryty_lvl});  
+            set_date[date] = &set_data[date];
         }
     }
     
@@ -325,6 +332,28 @@ public:
 
         }
     }
+
+    void show_date() {
+        auto date_start = calendar::day_clock::local_day() - calendar::days(7);
+        auto date_end = calendar::day_clock::local_day() + calendar::days(7);
+        auto it = set_date.lower_bound(calendar::to_sql_string(date_start));
+        for(size_t i = 0; it != set_date.end() &&  calendar::from_string(it->first) < date_end; ++i, ++it) {
+            std::cout  << "DATE: " << it->first << std::endl;
+        }
+    }
+
+    void show_dates_with_tasks() {
+        auto date_start = calendar::day_clock::local_day() - calendar::days(7);
+        auto date_end = calendar::day_clock::local_day() + calendar::days(7);
+        auto it = set_date.lower_bound(calendar::to_sql_string(date_start));
+        for(size_t i = 0; it != set_date.end() &&  calendar::from_string(it->first) < date_end; ++i, ++it) {
+            std::cout << "--------------------------------" << std::endl;
+            std::cout  << "DATE: " << it->first << std::endl;
+            print_data_set(*it->second);
+            std::cout << "--------------------------------" << std::endl;
+        }
+    }
+
 };
 
 #endif

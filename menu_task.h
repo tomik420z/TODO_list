@@ -95,21 +95,95 @@ class menu_task {
         return task;
     }
 
+    static boost::posix_time::time_duration round_time(bool& flag_error) {
+        using namespace boost;
+        posix_time::ptime loc_time(boost::posix_time::second_clock::local_time());
+        posix_time::time_duration d = loc_time.time_of_day();
+        auto t_minutes = d.minutes();
+        auto t_hours = d.hours();
+        if (t_minutes < 15) {
+            t_minutes = 0; 
+        } else if (t_minutes >= 15 && t_minutes < 30) {
+            t_minutes = 30;
+        } else if (t_minutes >= 30 && t_minutes < 45) {
+            t_minutes = 30;
+        } else {
+            t_minutes = 0;
+            if (t_hours < 23) {
+                t_hours += 1; 
+            } else {
+                flag_error = true;
+            }
+        }
+        return posix_time::time_duration(t_hours, t_minutes, 0);
+    }
+
     static std::string input_start_time() {
+        using std::cin;
         std::string new_start;
-        std::getline(std::cin, new_start, '\n');
+        ignore_spaces();
+        while('0' <= cin.peek() && cin.peek() <= '9' || cin.peek() == ':') {
+            new_start += cin.get();
+        }
         if (new_start.size() == 4) {
             new_start.insert(new_start.begin(), '0');
         }
+        ignore_spaces();
+        if (cin.peek() == '\n') {
+            cin.ignore();
+        } else {
+            while(cin.peek() != '\n') {
+                cin.ignore();
+            }
+            cin.ignore();
+            throw exception_data_task::incorrect_format_time();
+        }
+
+        if (new_start.empty()) {
+            bool flag = false;
+            new_start = boost::posix_time::to_simple_string(round_time(flag));
+            new_start.pop_back();
+            new_start.pop_back();
+            new_start.pop_back();
+        }
+
         return new_start;
     }
 
     static std::string input_end_time() {
+        using std::cin;
+        using boost::posix_time::time_duration;
+        
         std::string new_end;
-        std::getline(std::cin, new_end, '\n');
+        ignore_spaces();
+        
+        while('0' <= cin.peek() && cin.peek() <= '9' || cin.peek() == ':') {
+            new_end += cin.get();
+        }
         if (new_end.size() == 4) {
             new_end.insert(new_end.begin(), '0');
         }
+        
+        ignore_spaces();
+        
+        if (cin.peek() == '\n') {
+            cin.ignore();
+        } else {
+            while(cin.peek() != '\n') {
+                cin.ignore();
+            }
+            cin.ignore();
+            throw exception_data_task::incorrect_format_time();
+        }
+
+        if (new_end.empty()) {
+            bool flag = false;
+            new_end = boost::posix_time::to_simple_string(round_time(flag) + boost::posix_time::hours(1));
+            new_end.pop_back();
+            new_end.pop_back();
+            new_end.pop_back();
+        }
+        
         return new_end;
     }
     static void cin_get() {
@@ -257,6 +331,11 @@ public:
                 case 6: 
                     {                
                         select_index = -1;
+                        break;
+                    }
+                case 7:
+                    {
+                        
                         break;
                     }
                 default:
