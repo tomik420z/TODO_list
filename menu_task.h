@@ -20,7 +20,8 @@ class menu_task {
         std::cout << "3. RESCHEDULE THE EVENT" << std::endl;
         std::cout << "4. SHOW TASKS FOR THE GIVEN DAY" << std::endl;
         std::cout << "5. SHOW TASKS FOR TODAY" << std::endl;
-        std::cout << "6. SAVE AND EXIT" << std::endl;
+        std::cout << "6. SHOW DATES ON WHICH TASKS ARE ASSIGNED" << std::endl;
+        std::cout << "7. SAVE AND EXIT" << std::endl;
     }
 
     static int input_integer() {
@@ -40,7 +41,7 @@ class menu_task {
             }
             cin.ignore();
             
-            throw std::string("you need to enter a number from 1 to 6");
+            throw std::string("you need to enter a number from 1 to 7");
         }  else {
             cin.ignore();
         }
@@ -83,8 +84,6 @@ class menu_task {
                 throw exception_data_task::incorrect_format_date();
             } 
         }
-
-        
 
         return new_date;
     }
@@ -205,6 +204,67 @@ class menu_task {
 
     } 
 
+    static char input_select() {
+        using std::cin;
+        char select;
+        bool flag_correct = false;
+        while(!flag_correct) {
+            while (cin.peek() == ' ' || cin.peek() == '\n')  {
+                cin.ignore();
+            } 
+            if(cin.peek() == 'y' || cin.peek() == 'n') {
+                select = cin.get();
+            } else {
+                while(cin.peek() != '\n') {
+                    cin.ignore();
+                }
+                cin.ignore();
+                continue;
+            } 
+
+            ignore_spaces();
+            if (cin.peek() == '\n') {
+                flag_correct = true;
+                cin.ignore();
+            } else {
+                while(cin.peek() != '\n') {
+                    cin.ignore();
+                }
+                cin.ignore();
+                continue;
+            }
+        }
+        return select;
+
+    }
+
+    static std::vector<std::string> input_comment() {
+        using std::cin;
+        std::vector<std::string> comments;
+        size_t i = 1;
+        std::string tmp_str;
+        do {
+            std::cout << i << ".";
+            ignore_spaces();
+            while(cin.peek() != '\n') {
+                tmp_str += cin.get();
+            }
+            cin.get();
+
+            while(!tmp_str.empty() && tmp_str.back() == ' '){
+                tmp_str.pop_back();
+            }
+
+            if (!tmp_str.empty()) {
+                comments.emplace_back(std::move(tmp_str));
+            } else {
+                break;
+            }
+            ++i;
+        } while(true);
+        return comments;
+    }
+
 
 public:
 
@@ -245,7 +305,14 @@ public:
                         
                         std::cout << "select a number from 1 to 3" << std::endl;
                         size_t select_priority = input_integer();
-                        data.add_new_task(std::move(new_date), std::move(new_task), std::move(new_start), std::move(new_end), select_priority);
+                        std::vector<std::string> comments;
+                        std::cout << "whether you want to add comments to the task? (y/n)" << std::endl;
+                        char ch = input_select();
+                        if (ch == 'y') {
+                            std::cout << "enter a list of comments to continue, press key enter" << std::endl;
+                            comments = input_comment();
+                        } 
+                        data.add_new_task(std::move(new_date), std::move(new_task), std::move(new_start), std::move(new_end), select_priority, std::move(comments));
                         
                         system("cls");
                         print_menu();
@@ -328,16 +395,25 @@ public:
                         data.show_tasks_for_the_given_day(calendar::to_sql_string(calendar::day_clock::local_day()));
                         break;
                     }
-                case 6: 
-                    {                
-                        select_index = -1;
-                        break;
-                    }
-                case 7:
+                case 6:
                     {
                         
+                        std::cout << "you want to also show the tasks along with the dates? (y/n)" << std::endl;
+                        char ch = input_select();
+                        system("cls");
+                        print_menu();
+                        if (ch == 'y')  {
+                            data.show_dates_with_tasks(); 
+                        } else {
+                            data.show_date();
+                        }
                         break;
                     }
+                case 7: 
+                {                
+                    select_index = -1;
+                    break;
+                }
                 default:
                     {                
                         throw std::string("you need to enter a number from 1 to 6");

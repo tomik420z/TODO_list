@@ -6,6 +6,7 @@
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time/gregorian/gregorian.hpp>
+#include <boost/filesystem.hpp>
 #include <boost/foreach.hpp>
 #include <cassert>
 #include <exception>
@@ -18,6 +19,8 @@
 #include "check_date.h"
 #include "exception_data_task.h"
 #include <windows.h>
+
+
 namespace property = boost::property_tree;
 namespace calendar = boost::gregorian;
 
@@ -26,6 +29,7 @@ struct data_el {
     std::string end_time;
     std::string task;
     size_t priority_lvl;
+    std::vector<std::string> comments;
 
     std::pair<std::string, std::string> get_time_interval() const {
         return std::pair{start_time, end_time};
@@ -71,8 +75,16 @@ protected:
                         end_time = node_values.get<std::string>("end_time"), 
                         task = node_values.get<std::string>("task");
             size_t priority_lvl = node_values.get<size_t>("priority_lvl");
+            std::vector<std::string> comments;
+            if (auto it = node_values.find("comment"); it != node_values.not_found()) { 
+                auto values = node_values.get_child("comment");
+                for(const auto &[path, val] : values) {
+                    comments.push_back(val.data());
+                }
+            }
+
             if (checking_time::check(start_time) && checking_time::check(end_time)) {
-                set_data[date].emplace(data_el{std::move(start_time), std::move(end_time), std::move(task), priority_lvl});
+                set_data[date].emplace(data_el{std::move(start_time), std::move(end_time), std::move(task), priority_lvl, std::move(comments)});
                 set_date[date] = &set_data[date];
             } else if (start_time >= end_time) {
                 throw exception_data_task::incorrect_format_interval();
@@ -113,13 +125,35 @@ public:
     void write_to_json() {
         property::ptree list_tasks;
         for(auto& [key, values] : set_data) {
-            for(auto& [start_time, end_time, c_task, priority_lvl] : values) {
+            for(auto& [start_time, end_time, c_task, priority_lvl, comments] : values) {
                 property::ptree node;
                 node.put("date", std::move(key));
                 node.put("start_time", std::move(start_time));
                 node.put("end_time", std::move(end_time));
                 node.put("task", std::move(c_task));
                 node.put("priority_lvl", priority_lvl);
+                
+                if (!comments.empty()) {          
+                    /*
+                    pt::ptree fruits_node;
+    for (auto &fruit : fruits)
+    {
+        // Create an unnamed node containing the value
+        pt::ptree fruit_node;
+        fruit_node.put("", fruit);
+
+        // Add this node to the list.
+        fruits_node.push_back(std::make_pair("", fruit_node));
+    }
+    oroot.add_child("fruits", fruits_node);*/
+                property::ptree comments_node;
+                for(auto & comment : comments) {
+                    property::ptree comment_node;
+                    comment_node.put("", std::move(comment));
+                    comments_node.push_back(std::make_pair("", comment_node));
+                }
+                node.add_child("comment", comments_node);
+                }
                 list_tasks.push_back(std::make_pair("", node));
             }
         }
@@ -128,7 +162,7 @@ public:
         property::write_json(file_name, out_root);
     }
 
-    void add_new_task(std::string&& date, std::string&& task, std::string&& time_start, std::string&& time_end, size_t prioryty_lvl) {
+    void add_new_task(std::string&& date, std::string&& task, std::string&& time_start, std::string&& time_end, size_t prioryty_lvl, std::vector<std::string> && comments) {
         try {
             calendar::date yymmdd = calendar::from_string(date);
             }
@@ -166,7 +200,8 @@ public:
             }
 
             if (flag_insert) {
-                ref_set.insert(data_el{std::move(time_start), std::move(time_end), std::move(task), prioryty_lvl});
+                
+                ref_set.insert(data_el{std::move(time_start), std::move(time_end), std::move(task), prioryty_lvl, std::move(comments)});
                 set_date[date] = &ref_set;
             } else {
                 throw exception_data_task::task_is_superimposed_on_another();
@@ -174,7 +209,7 @@ public:
              
 
         } else {
-            set_data[date].insert(data_el{std::move(time_start), std::move(time_end), std::move(task), prioryty_lvl});  
+            set_data[date].insert(data_el{std::move(time_start), std::move(time_end), std::move(task), prioryty_lvl, std::move(comments)});  
             set_date[date] = &set_data[date];
         }
     }
@@ -225,10 +260,11 @@ public:
         if (auto it_find = set_data.find(date); it_find != set_data.end()) {
             auto ref_set = it_find->second;
             auto it_erase = select(ref_set, select_index);
-            std::string task = it_erase->task;
+            std::string task = std::move(it_erase->task);
+            auto comments = std::move(it_erase->comments);
             size_t priority_lvl = it_erase->priority_lvl;
             erase(ref_set, it_erase, it_find);
-            add_new_task(std::move(new_date), std::move(task), std::move(new_start), std::move(new_end), priority_lvl);
+            add_new_task(std::move(new_date), std::move(task), std::move(new_start), std::move(new_end), priority_lvl, std::move(comments));
         } else {
             throw exception_data_task::non_existent_date();
         }
@@ -239,7 +275,7 @@ public:
     void print_data() const {
         for(const auto& [key, value] : set_data) {
             std::cout << "date " << key  << std::endl;
-            for(const auto& [start_time, end_time, c_task, prioryty_lvl] : value) {
+            for(const auto& [start_time, end_time, c_task, prioryty_lvl, comments] : value) {
                 std::cout << start_time << "-" << end_time << " " << c_task  << " " << prioryty_lvl << std::endl;
             }
         }
@@ -258,7 +294,7 @@ public:
         if (auto it = set_data.find(date); it != set_data.end()) {
             size_t index = 0;
             std::cout << "---------------------------------" << std::endl;
-            for (const auto& [c_time_start, c_time_end, c_task, priority_lvl] : it->second) {
+            for (const auto& [c_time_start, c_time_end, c_task, priority_lvl, comments] : it->second) {
                 WORD clr;
                 if (priority_lvl == 1) {
                     clr = 02; 
@@ -270,7 +306,6 @@ public:
                 SetConsoleTextAttribute(h, clr);
                 std::cout << ++index << ". task: " << c_task << std::endl;
                 std::cout << "time: " << c_time_start << "-" << c_time_end  <<  std::endl;
-                
                 std::cout << "priority: ";
                 if (priority_lvl == 1) {
                     std::cout << "low" << std::endl;
@@ -278,6 +313,13 @@ public:
                     std::cout << "medium" << std::endl;
                 } else {
                     std::cout << "high" << std::endl;
+                }
+
+                if (!comments.empty()) {
+                    std::cout << "comments: " << std::endl;
+                    for(const auto& comment : comments) {
+                        std::cout << "** " << comment << " **" << std::endl;
+                    }
                 }
                 SetConsoleTextAttribute(h, 07);
             }
@@ -308,7 +350,7 @@ public:
         HANDLE h;
         h = GetStdHandle(STD_OUTPUT_HANDLE); 
         size_t ind = 0;
-        for(const auto & [start_time, end_time, task, priority_lvl]  : set) {
+        for(const auto & [start_time, end_time, task, priority_lvl, comments]  : set) {
             WORD clr;
             if (priority_lvl == 1) {
                 clr = 02;
@@ -327,6 +369,12 @@ public:
                 std::cout << "medium" << std::endl;
             } else { 
                 std::cout << "high" << std::endl;
+            }
+            if (!comments.empty()) {
+                std::cout << "comments: " << std::endl;
+                for(const auto& comment : comments) {
+                    std::cout << "** " << comment << " **" << std::endl;
+                }
             }
             SetConsoleTextAttribute(h, 07);
 
