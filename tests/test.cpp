@@ -10,11 +10,11 @@ void firstTest()
     unordered_map<string, set<data_el>> set_data1;
 
     // add_new_task
-    set_data1["2023-04-28"].insert(data_el{"11:00", "12:00", "chill", 3});
+    set_data1["2023-04-28"].insert(data_el{"11:00", "12:00", "chill", 3, {"comment"}});
 
     data_task data_task_("tasks.json");
 
-    BOOST_CHECK_NO_THROW(data_task_.add_new_task("2023-04-28", "chill", "11:00", "12:00", 3));
+    BOOST_CHECK_NO_THROW(data_task_.add_new_task("2023-04-28", "chill", "11:00", "12:00", 3, vector<string>{"comment"}));
 
     auto set_data2 = data_task_.get_container();
 
