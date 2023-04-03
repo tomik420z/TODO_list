@@ -21,7 +21,8 @@ class menu_task {
         std::cout << "4. SHOW TASKS FOR THE GIVEN DAY" << std::endl;
         std::cout << "5. SHOW TASKS FOR TODAY" << std::endl;
         std::cout << "6. SHOW DATES ON WHICH TASKS ARE ASSIGNED" << std::endl;
-        std::cout << "7. SAVE AND EXIT" << std::endl;
+        std::cout << "7. EDITING A TASK" << std::endl;
+        std::cout << "8. SAVE AND EXIT" << std::endl;
     }
 
     static int input_integer() {
@@ -273,6 +274,17 @@ public:
         HANDLE h;
         h = GetStdHandle(STD_OUTPUT_HANDLE); 
         data_task data(f_name);
+        if (data.get_flag_saved() == true) {
+            std::cout << "The program was not terminated correctly last time, do you want to make any unsaved changes?(y/n)";
+            char select = input_select();
+            if (select == 'y') {
+                data.read_tmp_files();
+                data.write_to_json();
+            } else {
+                data.clear_tmp_dir();
+            }
+        }
+        
         int select_index = 0;
         system("cls");
         print_menu();
