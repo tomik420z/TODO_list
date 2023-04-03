@@ -287,18 +287,18 @@ protected:
     }
 
     template<bool flag_print>
-    void print_dates() const {    
-        auto date_start = calendar::day_clock::local_day() - calendar::days(7);
-        auto date_end = calendar::day_clock::local_day() + calendar::days(7);
-        auto it = set_date.lower_bound(calendar::to_sql_string(date_start));
-        if (it != set_date.end()) { ++it; }
-        for(size_t i = 0; it != set_date.end() &&  calendar::from_string(it->first) < date_end; ++i, ++it) {
+    void print_dates(const calendar::date& date_first, const calendar::date& date_last) const {    
+        
+        auto it_begin = set_date.lower_bound(calendar::to_sql_string(date_first));
+        auto it_end = set_date.upper_bound(calendar::to_sql_string(date_last));
+        
+        for(size_t i = 0; it_begin != it_end; ++i, ++it_begin) {
             if constexpr(flag_print) { 
                 std::cout << "--------------------------------" << std::endl;
             }
-            std::cout  << "DATE: " << it->first << std::endl;
+            std::cout  << "DATE: " << it_begin->first << std::endl;
             if constexpr (flag_print) {
-                print_data_set(*it->second);
+                print_data_set(*it_begin->second);
                 std::cout << "--------------------------------" << std::endl;
             }
         }
@@ -474,15 +474,15 @@ public:
 
         if (new_start >= new_end) {
             throw exception_data_task::incorrect_format_interval();
-    }
+        }
+
         if (auto it_find = set_data.find(date); it_find != set_data.end()) {
-            auto ref_set = it_find->second;
+            auto& ref_set = it_find->second;
             auto it_erase = select(ref_set, select_index);
             std::string task = std::move(it_erase->task);
             auto comments = std::move(it_erase->comments);
             size_t priority_lvl = it_erase->priority_lvl;
             erase(ref_set, it_erase, it_find, it_find->first);
-            std::cout << "erase" << std::endl;
             add_new_task(std::move(new_date), std::move(task), std::move(new_start), std::move(new_end), priority_lvl, std::move(comments));
         } else {
             throw exception_data_task::non_existent_date();
@@ -543,12 +543,12 @@ public:
         }
     }
 
-    void show_date() const {
-        print_dates<false>();
+    void show_date(const std::string & date_first, const std::string& date_last) const {
+        print_dates<false>(calendar::from_simple_string(date_first), calendar::from_simple_string(date_last));
     }
 
-    void show_dates_with_tasks() const {
-        print_dates<true>();
+    void show_dates_with_tasks(const std::string & date_first, const std::string& date_last) const {
+        print_dates<true>(calendar::from_simple_string(date_first), calendar::from_simple_string(date_last));
     }
 
 };

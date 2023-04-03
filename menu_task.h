@@ -198,7 +198,7 @@ class menu_task {
             if (isdigit(ch)) {
                 num = num * 10 + (ch - '0');
             } else {
-                throw std::string("you need to enter a number from 1 to 6");
+                throw std::string("you need to enter a number from 1 to 8");
             }
         }
         return num;
@@ -284,7 +284,7 @@ public:
                 data.clear_tmp_dir();
             }
         }
-        
+
         int select_index = 0;
         system("cls");
         print_menu();
@@ -414,21 +414,32 @@ public:
                         char ch = input_select();
                         system("cls");
                         print_menu();
+                        std::cout << "input date start: " << std::endl;
+                        std::string date_start = input_date();
+                        std::cout << "input date finish: " << std::endl;
+                        std::string date_last = input_date();
+                        if (date_start > date_last) {
+                            throw std::string("incorrect date interval");
+                        }
                         if (ch == 'y')  {
-                            data.show_dates_with_tasks(); 
+                            data.show_dates_with_tasks(date_start, date_last); 
                         } else {
-                            data.show_date();
+                            data.show_date(date_start, date_last);
                         }
                         break;
                     }
                 case 7: 
                 {                
+                    break;
+                }
+                case 8:
+                {
                     select_index = -1;
                     break;
                 }
                 default:
                     {                
-                        throw std::string("you need to enter a number from 1 to 6");
+                        throw std::string("you need to enter a number from 1 to 8");
                         break;
                     }
                 }
