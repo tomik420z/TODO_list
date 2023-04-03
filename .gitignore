@@ -1,0 +1,8 @@
+/.vscode
+/*.exe
+/dataset
+/main.cpp
+/main.exe
+/dataset/tasks.json
+.vscode
+/tests/test.exe

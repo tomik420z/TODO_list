@@ -1,0 +1,102 @@
+{
+    "tasks": [
+        {
+            "date": "2023-04-28",
+            "start_time": "11:00",
+            "end_time": "11:05",
+            "task": "smoke",
+            "priority_lvl": "3"
+        },
+        {
+            "date": "2023-11-11",
+            "start_time": "11:00",
+            "end_time": "12:00",
+            "task": "sleep",
+            "priority_lvl": "1"
+        },
+        {
+            "date": "2024-09-11",
+            "start_time": "11:42",
+            "end_time": "11:59",
+            "task": "learn c++",
+            "priority_lvl": "1"
+        },
+        {
+            "date": "2025-05-13",
+            "start_time": "10:13",
+            "end_time": "21:13",
+            "task": "suck",
+            "priority_lvl": "1"
+        },
+        {
+            "date": "2024-03-15",
+            "start_time": "23:00",
+            "end_time": "23:59",
+            "task": "swim in pool",
+            "priority_lvl": "1"
+        },
+        {
+            "date": "2023-09-14",
+            "start_time": "10:00",
+            "end_time": "12:00",
+            "task": "privet",
+            "priority_lvl": "1"
+        },
+        {
+            "date": "2024-06-23",
+            "start_time": "10:00",
+            "end_time": "11:00",
+            "task": "wwwww",
+            "priority_lvl": "1"
+        },
+        {
+            "date": "2023-05-12",
+            "start_time": "18:01",
+            "end_time": "20:00",
+            "task": "learn algorithms",
+            "priority_lvl": "2"
+        },
+        {
+            "date": "2023-12-22",
+            "start_time": "12:00",
+            "end_time": "14:00",
+            "task": "2023-12-22",
+            "priority_lvl": "1"
+        },
+        {
+            "date": "2023-04-12",
+            "start_time": "10:00",
+            "end_time": "11:00",
+            "task": "wwwww",
+            "priority_lvl": "1"
+        },
+        {
+            "date": "2023-03-29",
+            "start_time": "12:00",
+            "end_time": "15:00",
+            "task": "2023",
+            "priority_lvl": "3"
+        },
+        {
+            "date": "2023-03-28",
+            "start_time": "10:00",
+            "end_time": "12:40",
+            "task": "2023",
+            "priority_lvl": "3"
+        },
+        {
+            "date": "2023-03-28",
+            "start_time": "12:59",
+            "end_time": "17:30",
+            "task": "do Boba",
+            "priority_lvl": "3"
+        },
+        {
+            "date": "2023-12-12",
+            "start_time": "12:00",
+            "end_time": "12:01",
+            "task": "work",
+            "priority_lvl": "2"
+        }
+    ]
+}
