@@ -21,7 +21,7 @@ class menu_task {
         std::cout << "4. SHOW TASKS FOR THE GIVEN DAY" << std::endl;
         std::cout << "5. SHOW TASKS FOR TODAY" << std::endl;
         std::cout << "6. SHOW DATES ON WHICH TASKS ARE ASSIGNED" << std::endl;
-        std::cout << "7. EDITING A TASK" << std::endl;
+        std::cout << "7. SHOW UPCOMING DATES WITH TASKS" << std::endl;
         std::cout << "8. SAVE AND EXIT" << std::endl;
     }
 
@@ -198,7 +198,7 @@ class menu_task {
             if (isdigit(ch)) {
                 num = num * 10 + (ch - '0');
             } else {
-                throw std::string("you need to enter a number from 1 to 8");
+                throw std::string("you need to enter a number from 1 to 7");
             }
         }
         return num;
@@ -430,6 +430,18 @@ public:
                     }
                 case 7: 
                 {                
+                    std::cout << "you want to also show the tasks along with the dates? (y/n)" << std::endl;
+                    char ch = input_select();
+                    system("cls");
+                    print_menu();
+                    if (ch == 'y') {
+                        data.show_dates_with_tasks(calendar::to_sql_string(calendar::day_clock::local_day() - calendar::days(6)), 
+                                    calendar::to_sql_string(calendar::day_clock::local_day() + calendar::days(6)));
+                    } else {
+                        data.show_date(calendar::to_sql_string(calendar::day_clock::local_day() - calendar::days(6)), 
+                                    calendar::to_sql_string(calendar::day_clock::local_day() + calendar::days(6)));
+                    }
+
                     break;
                 }
                 case 8:
@@ -439,7 +451,7 @@ public:
                 }
                 default:
                     {                
-                        throw std::string("you need to enter a number from 1 to 8");
+                        throw std::string("you need to enter a number from 1 to 7");
                         break;
                     }
                 }

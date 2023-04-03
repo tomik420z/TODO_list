@@ -31,6 +31,7 @@ struct data_el {
     size_t priority_lvl;
     std::vector<std::string> comments;
     bool is_save;
+    
     std::pair<std::string, std::string> get_time_interval() const {
         return std::pair{start_time, end_time};
     } 
@@ -60,7 +61,7 @@ std::ostream& operator<<(std::ostream& os, const data_el& task_node) {
     }
 
     SetConsoleTextAttribute(data_el::output_handle, clr);
-    os <<  "task: " << task_node.task << std::endl;
+    os << "task: " << task_node.task << std::endl;
     os << "time: " << task_node.start_time << "-" << task_node.end_time  << std::endl;
     os << "priority: ";
     if (task_node.priority_lvl == 1) {
@@ -460,7 +461,7 @@ public:
         }
     }
 
-    void reschedule_the_event(const std::string& date, size_t select_index, 
+    void reschedule_the_event(std::string date, size_t select_index, 
                                 std::string&& new_date, std::string&& new_start, std::string&& new_end) {
         try {
             calendar::date yymmdd = calendar::from_string(new_date);
@@ -481,9 +482,17 @@ public:
             auto it_erase = select(ref_set, select_index);
             std::string task = std::move(it_erase->task);
             auto comments = std::move(it_erase->comments);
+            auto time_start = it_erase->start_time;
+            auto time_end = it_erase->end_time;
             size_t priority_lvl = it_erase->priority_lvl;
             erase(ref_set, it_erase, it_find, it_find->first);
-            add_new_task(std::move(new_date), std::move(task), std::move(new_start), std::move(new_end), priority_lvl, std::move(comments));
+            try {
+                add_new_task(std::move(new_date), std::move(task), std::move(new_start), std::move(new_end), priority_lvl, std::move(comments));
+            } catch(...) {
+                auto&ref_set = set_data[date];
+                ins(std::move(date), std::move(task), std::move(time_start), std::move(time_end), priority_lvl, std::move(comments), ref_set);
+                throw exception_data_task::task_is_superimposed_on_another();
+            }
         } else {
             throw exception_data_task::non_existent_date();
         }
