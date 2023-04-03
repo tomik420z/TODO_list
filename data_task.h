@@ -31,7 +31,7 @@ struct data_el {
     size_t priority_lvl;
     std::vector<std::string> comments;
     bool is_save;
-    
+
     std::pair<std::string, std::string> get_time_interval() const {
         return std::pair{start_time, end_time};
     } 
@@ -150,10 +150,6 @@ void write_binary(const std::string& f_name, const data_el & task, const std::st
     }
     buff.close();
 }
-
-
-
-
 
 class data_task {
 public:
@@ -338,6 +334,29 @@ public:
         saved_data = !(dir_add_iter == end && dir_rm_iter == end);
     }
 
+    bool check_the_entry_of_the_time_interval(container::iterator iter_set, std::string time_start, std::string time_end) {
+        auto& ref_set = iter_set->second;    
+        auto iter_next = ref_set.upper_bound(data_el{time_start, std::string{}, std::string{}, size_t{}});
+        bool flag_insert = true;
+        if (iter_next != ref_set.end()) {
+            const auto& [next_start, next_end] = iter_next->get_time_interval();
+            if (!check_interval(next_start, next_end, time_start, time_end)) {
+                flag_insert = false;
+            }
+        }
+
+        if (auto iter_prev = iter_next; iter_next != ref_set.begin()) {
+            --iter_prev;
+            const auto &[prev_start, prev_end] = iter_prev->get_time_interval();
+            if (!check_interval(prev_start, prev_end, time_start, time_end)) {
+                flag_insert = false;
+            }
+        }
+
+        return true;
+    }
+
+
     void clear_tmp_dir() {
         __cleardir();
     }
@@ -403,25 +422,7 @@ public:
 
         if (auto it_find = set_data.find(date); it_find != set_data.end()) {
             auto& ref_set = it_find->second;
-            
-            auto iter_next = ref_set.upper_bound(data_el{time_start, std::string{}, std::string{}, size_t{}});
-            bool flag_insert = true;
-            if (iter_next != ref_set.end()) {
-                const auto& [next_start, next_end] = iter_next->get_time_interval();
-                if (!check_interval(next_start, next_end, time_start, time_end)) {
-                    flag_insert = false;
-                }
-            }
-
-            if (auto iter_prev = iter_next; iter_next != ref_set.begin()) {
-                --iter_prev;
-                const auto &[prev_start, prev_end] = iter_prev->get_time_interval();
-                if (!check_interval(prev_start, prev_end, time_start, time_end)) {
-                    flag_insert = false;
-                }
-            }
-
-            if (flag_insert) {
+            if (check_the_entry_of_the_time_interval(it_find, time_start, time_end)) {
                 ins(std::move(date), std::move(task), std::move(time_start), std::move(time_end), prioryty_lvl, std::move(comments), ref_set);
             } else {
                 throw exception_data_task::task_is_superimposed_on_another();
@@ -469,6 +470,7 @@ public:
         catch(...) {
             throw exception_data_task::incorrect_format_date();
         }
+
         if (!checking_time::check(new_start) || !checking_time::check(new_end)) {
             throw exception_data_task::incorrect_format_time();
         }
@@ -488,6 +490,117 @@ public:
             erase(ref_set, it_erase, it_find, it_find->first);
             try {
                 add_new_task(std::move(new_date), std::move(task), std::move(new_start), std::move(new_end), priority_lvl, std::move(comments));
+            } catch(...) {
+                auto&ref_set = set_data[date];
+                ins(std::move(date), std::move(task), std::move(time_start), std::move(time_end), priority_lvl, std::move(comments), ref_set);
+                throw exception_data_task::task_is_superimposed_on_another();
+            }
+        } else {
+            throw exception_data_task::non_existent_date();
+        }
+    } 
+
+    void reschedule_the_event_save_time_start(std::string date, size_t select_index, 
+                                std::string&&new_end, std::string&& new_date) {
+        try {
+            calendar::date yymmdd = calendar::from_string(new_date);
+            }
+        catch(...) {
+            throw exception_data_task::incorrect_format_date();
+        }
+        if (!checking_time::check(new_end)) {
+            throw exception_data_task::incorrect_format_time();
+        }
+
+
+        if (auto it_find = set_data.find(date); it_find != set_data.end()) {
+            auto& ref_set = it_find->second;
+            auto it_erase = select(ref_set, select_index);
+            std::string task = std::move(it_erase->task);
+            auto comments = std::move(it_erase->comments);
+            auto time_start = it_erase->start_time;
+            auto time_end = it_erase->end_time;
+
+            
+            if (time_start >= new_end) {
+                throw exception_data_task::incorrect_format_interval();
+            }
+            size_t priority_lvl = it_erase->priority_lvl;
+            erase(ref_set, it_erase, it_find, it_find->first);
+            try {
+                add_new_task(std::move(new_date), std::move(task), std::move(time_start), std::move(new_end), priority_lvl, std::move(comments));
+            } catch(...) {
+                auto&ref_set = set_data[date];
+                ins(std::move(date), std::move(task), std::move(time_start), std::move(time_end), priority_lvl, std::move(comments), ref_set);
+                throw exception_data_task::task_is_superimposed_on_another();
+            }
+        } else {
+            throw exception_data_task::non_existent_date();
+        }
+    } 
+
+    void reschedule_the_event_save_time_end(std::string date, size_t select_index, 
+                                std::string&& new_date, std::string&& new_start) {
+        try {
+            calendar::date yymmdd = calendar::from_string(new_date);
+            }
+        catch(...) {
+            throw exception_data_task::incorrect_format_date();
+        }
+
+        if (!checking_time::check(new_start)) {
+            throw exception_data_task::incorrect_format_time();
+        }
+
+
+        if (auto it_find = set_data.find(date); it_find != set_data.end()) {
+            auto& ref_set = it_find->second;
+            auto it_erase = select(ref_set, select_index);
+            std::string task = std::move(it_erase->task);
+            auto comments = std::move(it_erase->comments);
+            auto time_start = it_erase->start_time;
+            auto time_end = it_erase->end_time;
+            if (new_start >= time_end) {
+                throw exception_data_task::incorrect_format_interval();
+            }
+
+            size_t priority_lvl = it_erase->priority_lvl;
+            erase(ref_set, it_erase, it_find, it_find->first);
+            try {
+                add_new_task(std::move(new_date), std::move(task), std::move(new_start), std::move(time_end), priority_lvl, std::move(comments));
+            } catch(...) {
+                auto&ref_set = set_data[date];
+                ins(std::move(date), std::move(task), std::move(time_start), std::move(time_end), priority_lvl, std::move(comments), ref_set);
+                throw exception_data_task::task_is_superimposed_on_another();
+            }
+        } else {
+            throw exception_data_task::non_existent_date();
+        }
+    } 
+
+
+
+    void reschedule_the_event_save_time(std::string date, size_t select_index, 
+                                std::string&& new_date) {
+        try {
+            calendar::date yymmdd = calendar::from_string(new_date);
+            }
+        catch(...) {
+            throw exception_data_task::incorrect_format_date();
+        }
+    
+
+        if (auto it_find = set_data.find(date); it_find != set_data.end()) {
+            auto& ref_set = it_find->second;
+            auto it_erase = select(ref_set, select_index);
+            std::string task = std::move(it_erase->task);
+            auto comments = std::move(it_erase->comments);
+            auto time_start = it_erase->start_time;
+            auto time_end = it_erase->end_time;
+            size_t priority_lvl = it_erase->priority_lvl;
+            erase(ref_set, it_erase, it_find, it_find->first);
+            try {
+                add_new_task(std::move(new_date), std::move(task), std::move(time_start), std::move(time_end), priority_lvl, std::move(comments));
             } catch(...) {
                 auto&ref_set = set_data[date];
                 ins(std::move(date), std::move(task), std::move(time_start), std::move(time_end), priority_lvl, std::move(comments), ref_set);
@@ -536,6 +649,11 @@ public:
     decltype(auto) choose_date(const std::string& date) {
         return set_data.find(date);
     }
+
+    
+    container::iterator find(const std::string& date) {
+        return set_data.find(date);
+    } 
 
     container::iterator begin() noexcept {
         return set_data.begin();

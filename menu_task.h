@@ -42,7 +42,7 @@ class menu_task {
             }
             cin.ignore();
             
-            throw std::string("you need to enter a number from 1 to 7");
+            throw std::string("you need to enter a number from 1 to 8");
         }  else {
             cin.ignore();
         }
@@ -95,30 +95,63 @@ class menu_task {
         return task;
     }
 
-    static boost::posix_time::time_duration round_time(bool& flag_error) {
-        using namespace boost;
-        posix_time::ptime loc_time(boost::posix_time::second_clock::local_time());
-        posix_time::time_duration d = loc_time.time_of_day();
-        auto t_minutes = d.minutes();
-        auto t_hours = d.hours();
-        if (t_minutes < 15) {
-            t_minutes = 0; 
-        } else if (t_minutes >= 15 && t_minutes < 30) {
-            t_minutes = 30;
-        } else if (t_minutes >= 30 && t_minutes < 45) {
-            t_minutes = 30;
+    static bool check_default_time(const boost::posix_time::time_duration& d) {
+        if (d.hours() > 23) {
+            return false;
         } else {
-            t_minutes = 0;
-            if (t_hours < 23) {
-                t_hours += 1; 
-            } else {
-                flag_error = true;
-            }
+            return true;
         }
-        return posix_time::time_duration(t_hours, t_minutes, 0);
     }
 
-    static std::string input_start_time() {
+    static std::string input_start_reschedule() {
+        using std::cin;
+        std::string new_start;
+        ignore_spaces();
+        while('0' <= cin.peek() && cin.peek() <= '9' || cin.peek() == ':') {
+            new_start += cin.get();
+        }
+        if (new_start.size() == 4) {
+            new_start.insert(new_start.begin(), '0');
+        }
+        ignore_spaces();
+        if (cin.peek() == '\n') {
+            cin.ignore();
+        } else {
+            while(cin.peek() != '\n') {
+                cin.ignore();
+            }
+            cin.ignore();
+            throw exception_data_task::incorrect_format_time();
+        }
+
+        return new_start;
+    }
+
+    static std::string input_end_reschedule() {
+        using std::cin;
+        std::string new_end;
+        ignore_spaces();
+        while('0' <= cin.peek() && cin.peek() <= '9' || cin.peek() == ':') {
+            new_end += cin.get();
+        }
+        if (new_end.size() == 4) {
+            new_end.insert(new_end.begin(), '0');
+        }
+        ignore_spaces();
+        if (cin.peek() == '\n') {
+            cin.ignore();
+        } else {
+            while(cin.peek() != '\n') {
+                cin.ignore();
+            }
+            cin.ignore();
+            throw exception_data_task::incorrect_format_time();
+        }
+
+        return new_end;
+    }
+
+    static std::string input_start_time(const boost::posix_time::time_duration &curr_time, bool flag_default) {
         using std::cin;
         std::string new_start;
         ignore_spaces();
@@ -140,17 +173,20 @@ class menu_task {
         }
 
         if (new_start.empty()) {
-            bool flag = false;
-            new_start = boost::posix_time::to_simple_string(round_time(flag));
-            new_start.pop_back();
-            new_start.pop_back();
-            new_start.pop_back();
+            if (flag_default) {
+                new_start = boost::posix_time::to_simple_string(curr_time);
+                new_start.pop_back();
+                new_start.pop_back();
+                new_start.pop_back();
+            } else {
+                throw exception_data_task::incorrect_format_time();
+            }
         }
 
         return new_start;
     }
 
-    static std::string input_end_time() {
+    static std::string input_end_time(const boost::posix_time::time_duration &curr_time,bool flag_default) {
         using std::cin;
         using boost::posix_time::time_duration;
         
@@ -177,11 +213,15 @@ class menu_task {
         }
 
         if (new_end.empty()) {
-            bool flag = false;
-            new_end = boost::posix_time::to_simple_string(round_time(flag) + boost::posix_time::hours(1));
-            new_end.pop_back();
-            new_end.pop_back();
-            new_end.pop_back();
+            if (flag_default) {
+               
+                new_end = boost::posix_time::to_simple_string(curr_time);
+                new_end.pop_back();
+                new_end.pop_back();
+                new_end.pop_back();
+            } else {
+                throw exception_data_task::incorrect_format_time();
+            }
         }
         
         return new_end;
@@ -270,7 +310,7 @@ class menu_task {
 public:
 
     static void exec(const char* f_name) {
-        
+        using namespace boost::posix_time;
         HANDLE h;
         h = GetStdHandle(STD_OUTPUT_HANDLE); 
         data_task data(f_name);
@@ -291,7 +331,7 @@ public:
         while(select_index != -1) {
             try {
             
-                std::cout << "select a number from 1 to 6" << std::endl;
+                std::cout << "select a number from 1 to 8" << std::endl;
                 select_index = input_integer();
                 system("cls");
                 print_menu();
@@ -302,10 +342,22 @@ public:
                         std::string new_task = input_task();
                         std::cout << "enter date:"<< std::endl;
                         std::string new_date = input_date();
-                        std::cout << "enter start time:"<< std::endl;
-                        std::string new_start = input_start_time();
-                        std::cout << "enter final time:" << std::endl;
-                        std::string new_end = input_end_time();
+                        time_duration default_time_start = second_clock::local_time().time_of_day();
+                        time_duration default_time_end = second_clock::local_time().time_of_day() + hours(1);
+                        bool flag_curr_time_start = check_default_time(default_time_start); // предложить текущее время для начала
+                        bool flag_curr_time_end = check_default_time(default_time_end);
+                        if (flag_curr_time_start) {
+                            std::cout << "enter start time (press key Enter to default time " << default_time_start.hours() << ":" << default_time_start.minutes() << " )" << std::endl;
+                        } else {
+                            std::cout << "enter start time " << std::endl;
+                        }
+                        std::string new_start = input_start_time(default_time_start, flag_curr_time_start);
+                        if (flag_curr_time_end) {
+                            std::cout << "enter final time (press key Enter to default time " << default_time_end.hours() << ":" << default_time_start.minutes() << " )" << std::endl;
+                        } else {
+                            std::cout << "enter final time:" << std::endl;
+                        }
+                        std::string new_end = input_end_time(default_time_end, flag_curr_time_end);
                         std::cout << "enter priority" << std::endl;
                         SetConsoleTextAttribute(h, 02);
                         std::cout << "1. low priority" << std::endl;
@@ -339,7 +391,7 @@ public:
                     {
                         std::cout << "enter date:"<< std::endl;
                         std::string erase_date = input_date();
-                        if (auto it_find = data.choose_date(erase_date); it_find != data.end()) {
+                        if (auto it_find = data.find(erase_date); it_find != data.end()) {
                             auto& ref_set = it_find->second;
                             data.print_data_set(ref_set);
                             std::cout << ref_set.size() + 1 << ". ya peredumal udalat'" << std::endl;
@@ -366,7 +418,7 @@ public:
                     {
                         std::cout << "enter date:"<< std::endl;
                         std::string erase_date = input_date();
-                        if (auto it_find = data.choose_date(erase_date); it_find != data.end()) {
+                        if (auto it_find = data.find(erase_date); it_find != data.end()) {
                             auto& ref_set = it_find->second;
                             data.print_data_set(ref_set);
                             std::cout << ref_set.size() + 1 << ". ya peredumal perenosit'" << std::endl;
@@ -380,11 +432,18 @@ public:
                             std::cout << "enter new date:" << std::endl;
                             std::string new_date = input_date();
                             std::cout << "enter new time start:" << std::endl;
-                            std::string new_start = input_start_time();
+                            std::string new_start = input_start_reschedule();
                             std::cout << "input new time finish:" << std::endl; 
-                            std::string new_end = input_end_time(); 
-                            data.reschedule_the_event(erase_date, select_index, std::move(new_date), std::move(new_start), std::move(new_end));
-                            
+                            std::string new_end = input_end_reschedule(); 
+                            if (new_start.empty() && new_end.empty()) {
+                                data.reschedule_the_event_save_time(erase_date, select_index, std::move(new_date));
+                            } else if (new_start.empty()) {
+                                data.reschedule_the_event_save_time_start(erase_date, select_index, std::move(new_date), std::move(new_end));
+                            } else if (new_end.empty()) {
+                                data.reschedule_the_event_save_time_end(erase_date, select_index, std::move(new_date), std::move(new_start));
+                            } else {
+                                data.reschedule_the_event(erase_date, select_index, std::move(new_date), std::move(new_start), std::move(new_end));
+                            }
                             system("cls");
                             print_menu();
                             SetConsoleTextAttribute(h, 02);
